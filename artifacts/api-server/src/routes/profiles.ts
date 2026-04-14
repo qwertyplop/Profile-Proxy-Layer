@@ -207,7 +207,7 @@ router.post("/profiles/:id/keys", async (req, res): Promise<void> => {
     .insert(apiKeysTable)
     .values({
       profileId: params.data.id,
-      keyValue: parsed.data.keyValue,
+      keyValue: parsed.data.keyValue.trim(),
       label: parsed.data.label ?? null,
     })
     .returning();

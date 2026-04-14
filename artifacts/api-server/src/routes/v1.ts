@@ -31,7 +31,7 @@ function buildForwardHeaders(req: import("express").Request, keyValue: string): 
     if (typeof v === "string") headers[k] = v;
     else if (Array.isArray(v)) headers[k] = v.join(", ");
   }
-  headers["Authorization"] = `Bearer ${keyValue}`;
+  headers["Authorization"] = `Bearer ${keyValue.trim()}`;
   return headers;
 }
 
