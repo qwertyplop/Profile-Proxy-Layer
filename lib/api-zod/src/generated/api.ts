@@ -136,6 +136,27 @@ export const AddProfileKeyBody = zod.object({
 });
 
 /**
+ * @summary Update an API key's value or label
+ */
+export const UpdateProfileKeyParams = zod.object({
+  id: zod.coerce.number(),
+  keyId: zod.coerce.number(),
+});
+
+export const UpdateProfileKeyBody = zod.object({
+  keyValue: zod.string().optional(),
+  label: zod.string().nullish(),
+});
+
+export const UpdateProfileKeyResponse = zod.object({
+  id: zod.number(),
+  profileId: zod.number(),
+  label: zod.string().nullable(),
+  keyValue: zod.string(),
+  createdAt: zod.string(),
+});
+
+/**
  * @summary Remove an API key from a profile
  */
 export const DeleteProfileKeyParams = zod.object({

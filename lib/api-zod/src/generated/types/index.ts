@@ -15,3 +15,4 @@ export * from "./healthStatus";
 export * from "./layerAccessKey";
 export * from "./profile";
 export * from "./updateProfileBody";
+export * from "./updateProfileKeyBody";

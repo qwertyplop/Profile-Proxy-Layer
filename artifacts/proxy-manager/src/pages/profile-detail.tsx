@@ -15,7 +15,8 @@ import {
   Copy,
   Check,
   Settings,
-  AlertTriangle
+  AlertTriangle,
+  Pencil,
 } from "lucide-react";
 
 import {
@@ -27,6 +28,7 @@ import {
   getListProfileKeysQueryKey,
   useAddProfileKey,
   useDeleteProfileKey,
+  useUpdateProfileKey,
   useRotateProfileKey,
   getListProfilesQueryKey,
 } from "@workspace/api-client-react";
@@ -71,6 +73,11 @@ const updateProfileSchema = z.object({
 });
 
 const addKeySchema = z.object({
+  keyValue: z.string().min(1, "Key value is required"),
+  label: z.string().optional(),
+});
+
+const editKeySchema = z.object({
   keyValue: z.string().min(1, "Key value is required"),
   label: z.string().optional(),
 });
@@ -275,9 +282,16 @@ function UpdateProfileForm({ profile }: { profile: any }) {
 
 function KeyRow({ apiKey, isActive, profileId }: { apiKey: any; isActive: boolean; profileId: number }) {
   const [show, setShow] = useState(false);
+  const [editOpen, setEditOpen] = useState(false);
   const deleteKey = useDeleteProfileKey();
+  const updateKey = useUpdateProfileKey();
   const queryClient = useQueryClient();
   const { toast } = useToast();
+
+  const editForm = useForm<z.infer<typeof editKeySchema>>({
+    resolver: zodResolver(editKeySchema),
+    defaultValues: { keyValue: apiKey.keyValue, label: apiKey.label ?? "" },
+  });
 
   const handleDelete = () => {
     deleteKey.mutate(
@@ -288,42 +302,103 @@ function KeyRow({ apiKey, isActive, profileId }: { apiKey: any; isActive: boolea
           toast({ title: "Key deleted" });
         },
         onError: (err) => {
-          toast({
-            title: "Error deleting key",
-            description: err.error || "Unknown error",
-            variant: "destructive",
-          });
+          toast({ title: "Error deleting key", description: err.error || "Unknown error", variant: "destructive" });
+        }
+      }
+    );
+  };
+
+  const handleEdit = (values: z.infer<typeof editKeySchema>) => {
+    updateKey.mutate(
+      { id: profileId, keyId: apiKey.id, data: { keyValue: values.keyValue, label: values.label || null } },
+      {
+        onSuccess: () => {
+          queryClient.invalidateQueries({ queryKey: getGetProfileQueryKey(profileId) });
+          toast({ title: "Key updated" });
+          setEditOpen(false);
+        },
+        onError: (err) => {
+          toast({ title: "Error updating key", description: err.error || "Unknown error", variant: "destructive" });
         }
       }
     );
   };
 
   return (
-    <div className={`p-3 rounded border font-mono text-sm flex items-center justify-between transition-colors ${
-      isActive 
-        ? "bg-primary/10 border-primary/50 text-primary-foreground" 
-        : "bg-secondary/30 border-border text-muted-foreground hover:bg-secondary/50"
-    }`}>
-      <div className="flex flex-col min-w-0 gap-1 flex-1 pr-4">
-        <div className="flex items-center gap-2">
-          {isActive && <div className="w-2 h-2 rounded-full bg-primary animate-pulse" />}
-          {apiKey.label && <span className="font-bold text-xs uppercase tracking-wider">{apiKey.label}</span>}
-          {!apiKey.label && <span className="text-xs uppercase tracking-wider opacity-50">Unnamed Key</span>}
+    <>
+      <div className={`p-3 rounded border font-mono text-sm flex items-center justify-between transition-colors ${
+        isActive 
+          ? "bg-primary/10 border-primary/50 text-primary-foreground" 
+          : "bg-secondary/30 border-border text-muted-foreground hover:bg-secondary/50"
+      }`}>
+        <div className="flex flex-col min-w-0 gap-1 flex-1 pr-2">
+          <div className="flex items-center gap-2">
+            {isActive && <div className="w-2 h-2 rounded-full bg-primary animate-pulse" />}
+            {apiKey.label && <span className="font-bold text-xs uppercase tracking-wider">{apiKey.label}</span>}
+            {!apiKey.label && <span className="text-xs uppercase tracking-wider opacity-50">Unnamed Key</span>}
+          </div>
+          <div className="truncate">
+            {show ? apiKey.keyValue : "••••••••••••••••••••••••••••••"}
+          </div>
         </div>
-        <div className="truncate flex items-center gap-2">
-          {show ? apiKey.keyValue : "••••••••••••••••••••••••••••••"}
+        
+        <div className="flex items-center gap-1 shrink-0">
+          <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setShow(!show)}>
+            {show ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+          </Button>
+          <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-foreground" onClick={() => { editForm.reset({ keyValue: apiKey.keyValue, label: apiKey.label ?? "" }); setEditOpen(true); }}>
+            <Pencil className="w-4 h-4" />
+          </Button>
+          <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive hover:text-destructive hover:bg-destructive/10" onClick={handleDelete} disabled={deleteKey.isPending}>
+            <Trash2 className="w-4 h-4" />
+          </Button>
         </div>
       </div>
-      
-      <div className="flex items-center gap-1 shrink-0">
-        <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setShow(!show)}>
-          {show ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-        </Button>
-        <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive hover:text-destructive hover:bg-destructive/10" onClick={handleDelete} disabled={deleteKey.isPending}>
-          <Trash2 className="w-4 h-4" />
-        </Button>
-      </div>
-    </div>
+
+      <Dialog open={editOpen} onOpenChange={setEditOpen}>
+        <DialogContent className="sm:max-w-[425px] font-mono">
+          <DialogHeader>
+            <DialogTitle>Edit API Key</DialogTitle>
+            <DialogDescription>Update the key value or label.</DialogDescription>
+          </DialogHeader>
+          <Form {...editForm}>
+            <form onSubmit={editForm.handleSubmit(handleEdit)} className="space-y-4 pt-2">
+              <FormField
+                control={editForm.control}
+                name="keyValue"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Key Value</FormLabel>
+                    <FormControl>
+                      <Input type="password" {...field} className="font-mono text-sm" />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={editForm.control}
+                name="label"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Label (Optional)</FormLabel>
+                    <FormControl>
+                      <Input placeholder="e.g. Paid Tier Key" {...field} className="font-mono text-sm" />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <DialogFooter className="pt-2">
+                <Button type="submit" disabled={updateKey.isPending}>
+                  {updateKey.isPending ? "Saving..." : "Save Changes"}
+                </Button>
+              </DialogFooter>
+            </form>
+          </Form>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 }
 

@@ -193,6 +193,40 @@ paths:
                 $ref: "#/components/schemas/ErrorResponse"
 
   /profiles/{id}/keys/{keyId}:
+    patch:
+      operationId: updateProfileKey
+      tags: [keys]
+      summary: Update an API key's value or label
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: keyId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateProfileKeyBody"
+      responses:
+        "200":
+          description: Updated key
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiKey"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
     delete:
       operationId: deleteProfileKey
       tags: [keys]
@@ -399,6 +433,15 @@ components:
         - label
         - keyValue
         - createdAt
+
+    UpdateProfileKeyBody:
+      type: object
+      properties:
+        keyValue:
+          type: string
+        label:
+          type: ["string", "null"]
+      required: []
 
     CreateAccessKeyBody:
       type: object

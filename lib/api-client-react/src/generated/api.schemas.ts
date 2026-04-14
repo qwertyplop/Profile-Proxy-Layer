@@ -52,6 +52,12 @@ export interface LayerAccessKey {
   createdAt: string;
 }
 
+export interface UpdateProfileKeyBody {
+  keyValue?: string;
+  /** @nullable */
+  label?: string | null;
+}
+
 export interface CreateAccessKeyBody {
   /** @nullable */
   label?: string | null;

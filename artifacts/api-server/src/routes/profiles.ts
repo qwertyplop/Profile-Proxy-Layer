@@ -1,5 +1,5 @@
 import { Router, type IRouter } from "express";
-import { eq, asc } from "drizzle-orm";
+import { eq, asc, and } from "drizzle-orm";
 import { db } from "@workspace/db";
 import { profilesTable, apiKeysTable } from "@workspace/db";
 import {
@@ -12,6 +12,7 @@ import {
   AddProfileKeyParams,
   AddProfileKeyBody,
   DeleteProfileKeyParams,
+  UpdateProfileKeyBody,
   RotateProfileKeyParams,
 } from "@workspace/api-zod";
 
@@ -213,6 +214,42 @@ router.post("/profiles/:id/keys", async (req, res): Promise<void> => {
     .returning();
 
   res.status(201).json(key);
+});
+
+router.patch("/profiles/:id/keys/:keyId", async (req, res): Promise<void> => {
+  const params = DeleteProfileKeyParams.safeParse(req.params);
+  if (!params.success) {
+    res.status(400).json({ error: params.error.message });
+    return;
+  }
+
+  const body = UpdateProfileKeyBody.safeParse(req.body);
+  if (!body.success) {
+    res.status(400).json({ error: body.error.message });
+    return;
+  }
+
+  const updates: Record<string, unknown> = {};
+  if (body.data.keyValue !== undefined) updates.keyValue = body.data.keyValue.trim();
+  if (body.data.label !== undefined) updates.label = body.data.label;
+
+  if (Object.keys(updates).length === 0) {
+    res.status(400).json({ error: "No fields to update" });
+    return;
+  }
+
+  const [updated] = await db
+    .update(apiKeysTable)
+    .set(updates)
+    .where(and(eq(apiKeysTable.id, params.data.keyId), eq(apiKeysTable.profileId, params.data.id)))
+    .returning();
+
+  if (!updated) {
+    res.status(404).json({ error: "Key not found" });
+    return;
+  }
+
+  res.json(updated);
 });
 
 router.delete("/profiles/:id/keys/:keyId", async (req, res): Promise<void> => {

@@ -26,6 +26,7 @@ import type {
   LayerAccessKey,
   Profile,
   UpdateProfileBody,
+  UpdateProfileKeyBody,
 } from "./api.schemas";
 
 import { customFetch } from "../custom-fetch";
@@ -704,6 +705,94 @@ export const useAddProfileKey = <
   TContext
 > => {
   return useMutation(getAddProfileKeyMutationOptions(options));
+};
+
+/**
+ * @summary Update an API key's value or label
+ */
+export const getUpdateProfileKeyUrl = (id: number, keyId: number) => {
+  return `/api/profiles/${id}/keys/${keyId}`;
+};
+
+export const updateProfileKey = async (
+  id: number,
+  keyId: number,
+  updateProfileKeyBody: UpdateProfileKeyBody,
+  options?: RequestInit,
+): Promise<ApiKey> => {
+  return customFetch<ApiKey>(getUpdateProfileKeyUrl(id, keyId), {
+    ...options,
+    method: "PATCH",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(updateProfileKeyBody),
+  });
+};
+
+export const getUpdateProfileKeyMutationOptions = <
+  TError = ErrorType<ErrorResponse>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof updateProfileKey>>,
+    TError,
+    { id: number; keyId: number; data: BodyType<UpdateProfileKeyBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof updateProfileKey>>,
+  TError,
+  { id: number; keyId: number; data: BodyType<UpdateProfileKeyBody> },
+  TContext
+> => {
+  const mutationKey = ["updateProfileKey"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof updateProfileKey>>,
+    { id: number; keyId: number; data: BodyType<UpdateProfileKeyBody> }
+  > = (props) => {
+    const { id, keyId, data } = props ?? {};
+
+    return updateProfileKey(id, keyId, data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type UpdateProfileKeyMutationResult = NonNullable<
+  Awaited<ReturnType<typeof updateProfileKey>>
+>;
+export type UpdateProfileKeyMutationBody = BodyType<UpdateProfileKeyBody>;
+export type UpdateProfileKeyMutationError = ErrorType<ErrorResponse>;
+
+/**
+ * @summary Update an API key's value or label
+ */
+export const useUpdateProfileKey = <
+  TError = ErrorType<ErrorResponse>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof updateProfileKey>>,
+    TError,
+    { id: number; keyId: number; data: BodyType<UpdateProfileKeyBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof updateProfileKey>>,
+  TError,
+  { id: number; keyId: number; data: BodyType<UpdateProfileKeyBody> },
+  TContext
+> => {
+  return useMutation(getUpdateProfileKeyMutationOptions(options));
 };
 
 /**
