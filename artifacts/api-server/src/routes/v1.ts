@@ -169,12 +169,36 @@ router.post("/v1/chat/completions", requireLayerAuth, async (req, res): Promise<
   res.status(upstream.status);
 
   upstream.headers.forEach((value, headerKey) => {
-    if (headerKey.toLowerCase() === "transfer-encoding") return;
+    const lower = headerKey.toLowerCase();
+    if (lower === "transfer-encoding" || lower === "content-encoding") return;
     res.setHeader(headerKey, value);
   });
 
-  const responseBody = await upstream.arrayBuffer();
-  res.send(Buffer.from(responseBody));
+  const isStream = forwardedBody.stream === true;
+
+  if (isStream && upstream.body) {
+    res.setHeader("Cache-Control", "no-cache");
+    res.setHeader("X-Accel-Buffering", "no");
+    const reader = upstream.body.getReader();
+    const flush = () => {
+      if (typeof (res as unknown as { flush?: () => void }).flush === "function") {
+        (res as unknown as { flush: () => void }).flush();
+      }
+    };
+    try {
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        res.write(Buffer.from(value));
+        flush();
+      }
+    } finally {
+      res.end();
+    }
+  } else {
+    const responseBody = await upstream.arrayBuffer();
+    res.send(Buffer.from(responseBody));
+  }
 });
 
 export default router;
