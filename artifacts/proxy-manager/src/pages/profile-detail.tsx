@@ -137,16 +137,22 @@ export default function ProfileDetail() {
               </section>
 
               <section className="bg-card border border-border rounded-lg p-6">
-                <h2 className="text-sm font-bold uppercase tracking-wider text-muted-foreground mb-4">Proxy URL Usage</h2>
-                <p className="text-sm text-muted-foreground mb-4">
-                  Point your clients (e.g., SillyTavern) to this base URL. The proxy will forward the rest of the path to your target URL.
+                <h2 className="text-sm font-bold uppercase tracking-wider text-muted-foreground mb-4">SillyTavern Setup</h2>
+                <p className="text-sm text-muted-foreground mb-3">
+                  Point SillyTavern (or any OpenAI-compatible client) to the unified endpoint below. Models from all profiles are listed as <span className="font-mono text-primary">ProfileName - ModelName</span> — select one and requests are routed here automatically with round-robin key rotation.
                 </p>
-                <div className="bg-secondary/50 border border-border rounded p-4 font-mono text-sm relative group">
-                  <div className="flex items-center justify-between">
-                    <span className="text-primary truncate mr-4">
-                      {window.location.origin}/proxy/{profile.name}/v1/chat/completions
-                    </span>
-                    <CopyButton text={`${window.location.origin}/proxy/${profile.name}/v1/chat/completions`} />
+                <div className="bg-secondary/50 border border-border rounded p-3 font-mono text-sm mb-3">
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="text-xs text-muted-foreground shrink-0">API URL</span>
+                    <span className="text-primary truncate mx-2">{window.location.origin}/v1</span>
+                    <CopyButton text={`${window.location.origin}/v1`} />
+                  </div>
+                </div>
+                <div className="bg-secondary/50 border border-border rounded p-3 font-mono text-sm">
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="text-xs text-muted-foreground shrink-0">Model prefix</span>
+                    <span className="text-primary truncate mx-2">{profile.name} - &lt;model&gt;</span>
+                    <CopyButton text={`${profile.name} - `} />
                   </div>
                 </div>
               </section>
