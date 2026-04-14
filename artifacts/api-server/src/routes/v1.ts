@@ -161,7 +161,7 @@ router.post("/v1/chat/completions", requireLayerAuth, async (req, res): Promise<
   headers["Content-Length"] = Buffer.byteLength(bodyContent).toString();
 
   req.log.info(
-    { profile: profileName, model: actualModel, keyIndex: idx, targetUrl: fullUrl },
+    { profile: profileName, model: actualModel, keyIndex: idx, targetUrl: fullUrl, requestBody: forwardedBody },
     "Forwarding chat/completions request",
   );
 
@@ -185,6 +185,7 @@ router.post("/v1/chat/completions", requireLayerAuth, async (req, res): Promise<
     res.setHeader("Cache-Control", "no-cache");
     res.setHeader("X-Accel-Buffering", "no");
     const reader = upstream.body.getReader();
+    const chunks: Uint8Array[] = [];
     const flush = () => {
       if (typeof (res as unknown as { flush?: () => void }).flush === "function") {
         (res as unknown as { flush: () => void }).flush();
@@ -194,14 +195,19 @@ router.post("/v1/chat/completions", requireLayerAuth, async (req, res): Promise<
       while (true) {
         const { done, value } = await reader.read();
         if (done) break;
+        chunks.push(value);
         res.write(Buffer.from(value));
         flush();
       }
     } finally {
       res.end();
+      const fullResponse = Buffer.concat(chunks).toString("utf8");
+      req.log.info({ status: upstream.status, responseBody: fullResponse }, "Upstream stream response");
     }
   } else {
     const responseBody = await upstream.arrayBuffer();
+    const responseText = Buffer.from(responseBody).toString("utf8");
+    req.log.info({ status: upstream.status, responseBody: responseText }, "Upstream response");
     res.send(Buffer.from(responseBody));
   }
 });
