@@ -22,7 +22,12 @@ function buildForwardHeaders(req: import("express").Request, keyValue: string): 
   const headers: Record<string, string> = {};
   for (const [k, v] of Object.entries(req.headers)) {
     const lower = k.toLowerCase();
-    if (lower === "host" || lower === "connection" || lower === "content-length") continue;
+    if (
+      lower === "host" ||
+      lower === "connection" ||
+      lower === "content-length" ||
+      lower === "authorization"
+    ) continue;
     if (typeof v === "string") headers[k] = v;
     else if (Array.isArray(v)) headers[k] = v.join(", ");
   }
