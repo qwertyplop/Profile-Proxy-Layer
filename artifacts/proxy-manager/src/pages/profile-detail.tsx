@@ -328,8 +328,8 @@ function KeyRow({ apiKey, isActive, profileId }: { apiKey: any; isActive: boolea
     <>
       <div className={`p-3 rounded border font-mono text-sm flex items-center justify-between transition-colors ${
         isActive 
-          ? "bg-primary/10 border-primary/50 text-primary-foreground" 
-          : "bg-secondary/30 border-border text-muted-foreground hover:bg-secondary/50"
+          ? "bg-primary/10 border-primary/50 text-foreground" 
+          : "bg-secondary/30 border-border text-foreground hover:bg-secondary/50"
       }`}>
         <div className="flex flex-col min-w-0 gap-1 flex-1 pr-2">
           <div className="flex items-center gap-2">
