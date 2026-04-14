@@ -78,19 +78,20 @@ export default function ProfileDetail() {
   const [, params] = useRoute("/profiles/:id");
   const id = params?.id ? parseInt(params.id, 10) : 0;
   
-  const { data: profile, isLoading } = useGetProfile(id, {
-    query: { enabled: !!id, queryKey: getGetProfileQueryKey(id) }
+  const { data: profile, isLoading, isError } = useGetProfile(id, {
+    query: { enabled: !!id, queryKey: getGetProfileQueryKey(id), retry: false }
   });
 
   if (isLoading) {
     return <ProfileDetailSkeleton />;
   }
 
-  if (!profile) {
+  if (isError || !profile) {
     return (
       <div className="flex flex-col items-center justify-center py-24 text-center">
         <AlertTriangle className="w-12 h-12 text-destructive mb-4" />
         <h2 className="text-xl font-bold mb-2">Profile not found</h2>
+        <p className="text-sm text-muted-foreground mt-1">No profile exists with this ID.</p>
         <Link href="/">
           <Button variant="outline" className="mt-4 gap-2">
             <ArrowLeft className="w-4 h-4" /> Back to Profiles
