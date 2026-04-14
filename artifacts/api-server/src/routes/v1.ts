@@ -102,8 +102,11 @@ router.post("/v1/chat/completions", requireLayerAuth, async (req, res): Promise<
   const body = req.body as Record<string, unknown>;
   const rawModel = typeof body?.model === "string" ? body.model : "";
 
+  req.log.info({ requestBody: body }, "Incoming chat/completions request");
+
   const separatorIdx = rawModel.indexOf(" - ");
   if (separatorIdx === -1) {
+    req.log.warn({ rawModel }, "Rejected: invalid model format");
     res.status(400).json({
       error: {
         message: `Invalid model format "${rawModel}". Expected "ProfileName - ModelName".`,
