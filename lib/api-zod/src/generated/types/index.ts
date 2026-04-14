@@ -8,8 +8,10 @@
 
 export * from "./addKeyBody";
 export * from "./apiKey";
+export * from "./createAccessKeyBody";
 export * from "./createProfileBody";
 export * from "./errorResponse";
 export * from "./healthStatus";
+export * from "./layerAccessKey";
 export * from "./profile";
 export * from "./updateProfileBody";

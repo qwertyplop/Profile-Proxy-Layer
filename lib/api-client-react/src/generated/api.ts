@@ -19,9 +19,11 @@ import type {
 import type {
   AddKeyBody,
   ApiKey,
+  CreateAccessKeyBody,
   CreateProfileBody,
   ErrorResponse,
   HealthStatus,
+  LayerAccessKey,
   Profile,
   UpdateProfileBody,
 } from "./api.schemas";
@@ -871,4 +873,249 @@ export const useRotateProfileKey = <
   TContext
 > => {
   return useMutation(getRotateProfileKeyMutationOptions(options));
+};
+
+/**
+ * @summary List all layer access keys
+ */
+export const getListAccessKeysUrl = () => {
+  return `/api/access-keys`;
+};
+
+export const listAccessKeys = async (
+  options?: RequestInit,
+): Promise<LayerAccessKey[]> => {
+  return customFetch<LayerAccessKey[]>(getListAccessKeysUrl(), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getListAccessKeysQueryKey = () => {
+  return [`/api/access-keys`] as const;
+};
+
+export const getListAccessKeysQueryOptions = <
+  TData = Awaited<ReturnType<typeof listAccessKeys>>,
+  TError = ErrorType<unknown>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof listAccessKeys>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getListAccessKeysQueryKey();
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof listAccessKeys>>> = ({
+    signal,
+  }) => listAccessKeys({ signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof listAccessKeys>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type ListAccessKeysQueryResult = NonNullable<
+  Awaited<ReturnType<typeof listAccessKeys>>
+>;
+export type ListAccessKeysQueryError = ErrorType<unknown>;
+
+/**
+ * @summary List all layer access keys
+ */
+
+export function useListAccessKeys<
+  TData = Awaited<ReturnType<typeof listAccessKeys>>,
+  TError = ErrorType<unknown>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof listAccessKeys>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getListAccessKeysQueryOptions(options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * @summary Create a new layer access key
+ */
+export const getCreateAccessKeyUrl = () => {
+  return `/api/access-keys`;
+};
+
+export const createAccessKey = async (
+  createAccessKeyBody: CreateAccessKeyBody,
+  options?: RequestInit,
+): Promise<LayerAccessKey> => {
+  return customFetch<LayerAccessKey>(getCreateAccessKeyUrl(), {
+    ...options,
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(createAccessKeyBody),
+  });
+};
+
+export const getCreateAccessKeyMutationOptions = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof createAccessKey>>,
+    TError,
+    { data: BodyType<CreateAccessKeyBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof createAccessKey>>,
+  TError,
+  { data: BodyType<CreateAccessKeyBody> },
+  TContext
+> => {
+  const mutationKey = ["createAccessKey"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof createAccessKey>>,
+    { data: BodyType<CreateAccessKeyBody> }
+  > = (props) => {
+    const { data } = props ?? {};
+
+    return createAccessKey(data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type CreateAccessKeyMutationResult = NonNullable<
+  Awaited<ReturnType<typeof createAccessKey>>
+>;
+export type CreateAccessKeyMutationBody = BodyType<CreateAccessKeyBody>;
+export type CreateAccessKeyMutationError = ErrorType<unknown>;
+
+/**
+ * @summary Create a new layer access key
+ */
+export const useCreateAccessKey = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof createAccessKey>>,
+    TError,
+    { data: BodyType<CreateAccessKeyBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof createAccessKey>>,
+  TError,
+  { data: BodyType<CreateAccessKeyBody> },
+  TContext
+> => {
+  return useMutation(getCreateAccessKeyMutationOptions(options));
+};
+
+/**
+ * @summary Delete a layer access key
+ */
+export const getDeleteAccessKeyUrl = (id: number) => {
+  return `/api/access-keys/${id}`;
+};
+
+export const deleteAccessKey = async (
+  id: number,
+  options?: RequestInit,
+): Promise<void> => {
+  return customFetch<void>(getDeleteAccessKeyUrl(id), {
+    ...options,
+    method: "DELETE",
+  });
+};
+
+export const getDeleteAccessKeyMutationOptions = <
+  TError = ErrorType<ErrorResponse>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof deleteAccessKey>>,
+    TError,
+    { id: number },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof deleteAccessKey>>,
+  TError,
+  { id: number },
+  TContext
+> => {
+  const mutationKey = ["deleteAccessKey"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof deleteAccessKey>>,
+    { id: number }
+  > = (props) => {
+    const { id } = props ?? {};
+
+    return deleteAccessKey(id, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type DeleteAccessKeyMutationResult = NonNullable<
+  Awaited<ReturnType<typeof deleteAccessKey>>
+>;
+
+export type DeleteAccessKeyMutationError = ErrorType<ErrorResponse>;
+
+/**
+ * @summary Delete a layer access key
+ */
+export const useDeleteAccessKey = <
+  TError = ErrorType<ErrorResponse>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof deleteAccessKey>>,
+    TError,
+    { id: number },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof deleteAccessKey>>,
+  TError,
+  { id: number },
+  TContext
+> => {
+  return useMutation(getDeleteAccessKeyMutationOptions(options));
 };

@@ -3,6 +3,7 @@ import { eq, asc } from "drizzle-orm";
 import { db } from "@workspace/db";
 import { profilesTable, apiKeysTable } from "@workspace/db";
 import { logger } from "../lib/logger";
+import { requireLayerAuth } from "../middlewares/auth";
 
 const router: IRouter = Router();
 
@@ -29,7 +30,7 @@ function buildForwardHeaders(req: import("express").Request, keyValue: string): 
   return headers;
 }
 
-router.get("/v1/models", async (req, res): Promise<void> => {
+router.get("/v1/models", requireLayerAuth, async (req, res): Promise<void> => {
   const profiles = await db
     .select()
     .from(profilesTable)
@@ -92,7 +93,7 @@ router.get("/v1/models", async (req, res): Promise<void> => {
   res.json({ object: "list", data: allModels });
 });
 
-router.post("/v1/chat/completions", async (req, res): Promise<void> => {
+router.post("/v1/chat/completions", requireLayerAuth, async (req, res): Promise<void> => {
   const body = req.body as Record<string, unknown>;
   const rawModel = typeof body?.model === "string" ? body.model : "";
 

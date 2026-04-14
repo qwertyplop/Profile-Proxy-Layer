@@ -167,3 +167,28 @@ export const RotateProfileKeyResponse = zod.object({
     }),
   ),
 });
+
+/**
+ * @summary List all layer access keys
+ */
+export const ListAccessKeysResponseItem = zod.object({
+  id: zod.number(),
+  label: zod.string().nullable(),
+  keyValue: zod.string(),
+  createdAt: zod.string(),
+});
+export const ListAccessKeysResponse = zod.array(ListAccessKeysResponseItem);
+
+/**
+ * @summary Create a new layer access key
+ */
+export const CreateAccessKeyBody = zod.object({
+  label: zod.string().nullish(),
+});
+
+/**
+ * @summary Delete a layer access key
+ */
+export const DeleteAccessKeyParams = zod.object({
+  id: zod.coerce.number(),
+});

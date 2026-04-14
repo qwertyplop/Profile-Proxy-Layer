@@ -44,6 +44,19 @@ export interface AddKeyBody {
   label?: string | null;
 }
 
+export interface LayerAccessKey {
+  id: number;
+  /** @nullable */
+  label: string | null;
+  keyValue: string;
+  createdAt: string;
+}
+
+export interface CreateAccessKeyBody {
+  /** @nullable */
+  label?: string | null;
+}
+
 export interface ErrorResponse {
   error: string;
 }

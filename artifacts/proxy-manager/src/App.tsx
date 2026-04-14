@@ -7,6 +7,7 @@ import NotFound from "@/pages/not-found";
 import { Layout } from "@/components/layout";
 import Profiles from "@/pages/profiles";
 import ProfileDetail from "@/pages/profile-detail";
+import AccessKeys from "@/pages/access-keys";
 
 const queryClient = new QueryClient();
 
@@ -15,6 +16,7 @@ function Router() {
     <Switch>
       <Route path="/" component={Profiles} />
       <Route path="/profiles/:id" component={ProfileDetail} />
+      <Route path="/access-keys" component={AccessKeys} />
       <Route component={NotFound} />
     </Switch>
   );
