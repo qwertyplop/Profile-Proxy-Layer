@@ -40,7 +40,7 @@ const createProfileSchema = z.object({
 });
 
 export default function Profiles() {
-  const { data: profiles, isLoading } = useListProfiles();
+  const { data: profiles = [], isLoading } = useListProfiles();
   const [isCreateOpen, setIsCreateOpen] = useState(false);
 
   return (
@@ -83,7 +83,7 @@ export default function Profiles() {
                       <Terminal className="w-4 h-4 text-primary" />
                       <h3 className="font-bold text-base truncate">{profile.name}</h3>
                     </div>
-                    <ArrowRight className="w-4 h-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" transform="translate-x-[-10px] group-hover:translate-x-0" />
+                    <ArrowRight className="w-4 h-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
                   </div>
                   
                   <div className="space-y-3">
