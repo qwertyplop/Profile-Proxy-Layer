@@ -5,18 +5,29 @@
  * API specification
  * OpenAPI spec version: 0.1.0
  */
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import type {
+  MutationFunction,
   QueryFunction,
   QueryKey,
+  UseMutationOptions,
+  UseMutationResult,
   UseQueryOptions,
   UseQueryResult,
 } from "@tanstack/react-query";
 
-import type { HealthStatus } from "./api.schemas";
+import type {
+  AddKeyBody,
+  ApiKey,
+  CreateProfileBody,
+  ErrorResponse,
+  HealthStatus,
+  Profile,
+  UpdateProfileBody,
+} from "./api.schemas";
 
 import { customFetch } from "../custom-fetch";
-import type { ErrorType } from "../custom-fetch";
+import type { ErrorType, BodyType } from "../custom-fetch";
 
 type AwaitedInput<T> = PromiseLike<T> | T;
 
@@ -99,3 +110,765 @@ export function useHealthCheck<
 
   return { ...query, queryKey: queryOptions.queryKey };
 }
+
+/**
+ * @summary List all profiles
+ */
+export const getListProfilesUrl = () => {
+  return `/api/profiles`;
+};
+
+export const listProfiles = async (
+  options?: RequestInit,
+): Promise<Profile[]> => {
+  return customFetch<Profile[]>(getListProfilesUrl(), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getListProfilesQueryKey = () => {
+  return [`/api/profiles`] as const;
+};
+
+export const getListProfilesQueryOptions = <
+  TData = Awaited<ReturnType<typeof listProfiles>>,
+  TError = ErrorType<unknown>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof listProfiles>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getListProfilesQueryKey();
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof listProfiles>>> = ({
+    signal,
+  }) => listProfiles({ signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof listProfiles>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type ListProfilesQueryResult = NonNullable<
+  Awaited<ReturnType<typeof listProfiles>>
+>;
+export type ListProfilesQueryError = ErrorType<unknown>;
+
+/**
+ * @summary List all profiles
+ */
+
+export function useListProfiles<
+  TData = Awaited<ReturnType<typeof listProfiles>>,
+  TError = ErrorType<unknown>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof listProfiles>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getListProfilesQueryOptions(options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * @summary Create a profile
+ */
+export const getCreateProfileUrl = () => {
+  return `/api/profiles`;
+};
+
+export const createProfile = async (
+  createProfileBody: CreateProfileBody,
+  options?: RequestInit,
+): Promise<Profile> => {
+  return customFetch<Profile>(getCreateProfileUrl(), {
+    ...options,
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(createProfileBody),
+  });
+};
+
+export const getCreateProfileMutationOptions = <
+  TError = ErrorType<ErrorResponse>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof createProfile>>,
+    TError,
+    { data: BodyType<CreateProfileBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof createProfile>>,
+  TError,
+  { data: BodyType<CreateProfileBody> },
+  TContext
+> => {
+  const mutationKey = ["createProfile"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof createProfile>>,
+    { data: BodyType<CreateProfileBody> }
+  > = (props) => {
+    const { data } = props ?? {};
+
+    return createProfile(data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type CreateProfileMutationResult = NonNullable<
+  Awaited<ReturnType<typeof createProfile>>
+>;
+export type CreateProfileMutationBody = BodyType<CreateProfileBody>;
+export type CreateProfileMutationError = ErrorType<ErrorResponse>;
+
+/**
+ * @summary Create a profile
+ */
+export const useCreateProfile = <
+  TError = ErrorType<ErrorResponse>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof createProfile>>,
+    TError,
+    { data: BodyType<CreateProfileBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof createProfile>>,
+  TError,
+  { data: BodyType<CreateProfileBody> },
+  TContext
+> => {
+  return useMutation(getCreateProfileMutationOptions(options));
+};
+
+/**
+ * @summary Get a profile
+ */
+export const getGetProfileUrl = (id: number) => {
+  return `/api/profiles/${id}`;
+};
+
+export const getProfile = async (
+  id: number,
+  options?: RequestInit,
+): Promise<Profile> => {
+  return customFetch<Profile>(getGetProfileUrl(id), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getGetProfileQueryKey = (id: number) => {
+  return [`/api/profiles/${id}`] as const;
+};
+
+export const getGetProfileQueryOptions = <
+  TData = Awaited<ReturnType<typeof getProfile>>,
+  TError = ErrorType<ErrorResponse>,
+>(
+  id: number,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof getProfile>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getGetProfileQueryKey(id);
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof getProfile>>> = ({
+    signal,
+  }) => getProfile(id, { signal, ...requestOptions });
+
+  return {
+    queryKey,
+    queryFn,
+    enabled: !!id,
+    ...queryOptions,
+  } as UseQueryOptions<
+    Awaited<ReturnType<typeof getProfile>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type GetProfileQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getProfile>>
+>;
+export type GetProfileQueryError = ErrorType<ErrorResponse>;
+
+/**
+ * @summary Get a profile
+ */
+
+export function useGetProfile<
+  TData = Awaited<ReturnType<typeof getProfile>>,
+  TError = ErrorType<ErrorResponse>,
+>(
+  id: number,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof getProfile>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getGetProfileQueryOptions(id, options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * @summary Update a profile
+ */
+export const getUpdateProfileUrl = (id: number) => {
+  return `/api/profiles/${id}`;
+};
+
+export const updateProfile = async (
+  id: number,
+  updateProfileBody: UpdateProfileBody,
+  options?: RequestInit,
+): Promise<Profile> => {
+  return customFetch<Profile>(getUpdateProfileUrl(id), {
+    ...options,
+    method: "PATCH",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(updateProfileBody),
+  });
+};
+
+export const getUpdateProfileMutationOptions = <
+  TError = ErrorType<ErrorResponse>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof updateProfile>>,
+    TError,
+    { id: number; data: BodyType<UpdateProfileBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof updateProfile>>,
+  TError,
+  { id: number; data: BodyType<UpdateProfileBody> },
+  TContext
+> => {
+  const mutationKey = ["updateProfile"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof updateProfile>>,
+    { id: number; data: BodyType<UpdateProfileBody> }
+  > = (props) => {
+    const { id, data } = props ?? {};
+
+    return updateProfile(id, data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type UpdateProfileMutationResult = NonNullable<
+  Awaited<ReturnType<typeof updateProfile>>
+>;
+export type UpdateProfileMutationBody = BodyType<UpdateProfileBody>;
+export type UpdateProfileMutationError = ErrorType<ErrorResponse>;
+
+/**
+ * @summary Update a profile
+ */
+export const useUpdateProfile = <
+  TError = ErrorType<ErrorResponse>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof updateProfile>>,
+    TError,
+    { id: number; data: BodyType<UpdateProfileBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof updateProfile>>,
+  TError,
+  { id: number; data: BodyType<UpdateProfileBody> },
+  TContext
+> => {
+  return useMutation(getUpdateProfileMutationOptions(options));
+};
+
+/**
+ * @summary Delete a profile
+ */
+export const getDeleteProfileUrl = (id: number) => {
+  return `/api/profiles/${id}`;
+};
+
+export const deleteProfile = async (
+  id: number,
+  options?: RequestInit,
+): Promise<void> => {
+  return customFetch<void>(getDeleteProfileUrl(id), {
+    ...options,
+    method: "DELETE",
+  });
+};
+
+export const getDeleteProfileMutationOptions = <
+  TError = ErrorType<ErrorResponse>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof deleteProfile>>,
+    TError,
+    { id: number },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof deleteProfile>>,
+  TError,
+  { id: number },
+  TContext
+> => {
+  const mutationKey = ["deleteProfile"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof deleteProfile>>,
+    { id: number }
+  > = (props) => {
+    const { id } = props ?? {};
+
+    return deleteProfile(id, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type DeleteProfileMutationResult = NonNullable<
+  Awaited<ReturnType<typeof deleteProfile>>
+>;
+
+export type DeleteProfileMutationError = ErrorType<ErrorResponse>;
+
+/**
+ * @summary Delete a profile
+ */
+export const useDeleteProfile = <
+  TError = ErrorType<ErrorResponse>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof deleteProfile>>,
+    TError,
+    { id: number },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof deleteProfile>>,
+  TError,
+  { id: number },
+  TContext
+> => {
+  return useMutation(getDeleteProfileMutationOptions(options));
+};
+
+/**
+ * @summary List API keys for a profile
+ */
+export const getListProfileKeysUrl = (id: number) => {
+  return `/api/profiles/${id}/keys`;
+};
+
+export const listProfileKeys = async (
+  id: number,
+  options?: RequestInit,
+): Promise<ApiKey[]> => {
+  return customFetch<ApiKey[]>(getListProfileKeysUrl(id), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getListProfileKeysQueryKey = (id: number) => {
+  return [`/api/profiles/${id}/keys`] as const;
+};
+
+export const getListProfileKeysQueryOptions = <
+  TData = Awaited<ReturnType<typeof listProfileKeys>>,
+  TError = ErrorType<unknown>,
+>(
+  id: number,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof listProfileKeys>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getListProfileKeysQueryKey(id);
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof listProfileKeys>>> = ({
+    signal,
+  }) => listProfileKeys(id, { signal, ...requestOptions });
+
+  return {
+    queryKey,
+    queryFn,
+    enabled: !!id,
+    ...queryOptions,
+  } as UseQueryOptions<
+    Awaited<ReturnType<typeof listProfileKeys>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type ListProfileKeysQueryResult = NonNullable<
+  Awaited<ReturnType<typeof listProfileKeys>>
+>;
+export type ListProfileKeysQueryError = ErrorType<unknown>;
+
+/**
+ * @summary List API keys for a profile
+ */
+
+export function useListProfileKeys<
+  TData = Awaited<ReturnType<typeof listProfileKeys>>,
+  TError = ErrorType<unknown>,
+>(
+  id: number,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof listProfileKeys>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getListProfileKeysQueryOptions(id, options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * @summary Add an API key to a profile
+ */
+export const getAddProfileKeyUrl = (id: number) => {
+  return `/api/profiles/${id}/keys`;
+};
+
+export const addProfileKey = async (
+  id: number,
+  addKeyBody: AddKeyBody,
+  options?: RequestInit,
+): Promise<ApiKey> => {
+  return customFetch<ApiKey>(getAddProfileKeyUrl(id), {
+    ...options,
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(addKeyBody),
+  });
+};
+
+export const getAddProfileKeyMutationOptions = <
+  TError = ErrorType<ErrorResponse>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof addProfileKey>>,
+    TError,
+    { id: number; data: BodyType<AddKeyBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof addProfileKey>>,
+  TError,
+  { id: number; data: BodyType<AddKeyBody> },
+  TContext
+> => {
+  const mutationKey = ["addProfileKey"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof addProfileKey>>,
+    { id: number; data: BodyType<AddKeyBody> }
+  > = (props) => {
+    const { id, data } = props ?? {};
+
+    return addProfileKey(id, data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type AddProfileKeyMutationResult = NonNullable<
+  Awaited<ReturnType<typeof addProfileKey>>
+>;
+export type AddProfileKeyMutationBody = BodyType<AddKeyBody>;
+export type AddProfileKeyMutationError = ErrorType<ErrorResponse>;
+
+/**
+ * @summary Add an API key to a profile
+ */
+export const useAddProfileKey = <
+  TError = ErrorType<ErrorResponse>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof addProfileKey>>,
+    TError,
+    { id: number; data: BodyType<AddKeyBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof addProfileKey>>,
+  TError,
+  { id: number; data: BodyType<AddKeyBody> },
+  TContext
+> => {
+  return useMutation(getAddProfileKeyMutationOptions(options));
+};
+
+/**
+ * @summary Remove an API key from a profile
+ */
+export const getDeleteProfileKeyUrl = (id: number, keyId: number) => {
+  return `/api/profiles/${id}/keys/${keyId}`;
+};
+
+export const deleteProfileKey = async (
+  id: number,
+  keyId: number,
+  options?: RequestInit,
+): Promise<void> => {
+  return customFetch<void>(getDeleteProfileKeyUrl(id, keyId), {
+    ...options,
+    method: "DELETE",
+  });
+};
+
+export const getDeleteProfileKeyMutationOptions = <
+  TError = ErrorType<ErrorResponse>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof deleteProfileKey>>,
+    TError,
+    { id: number; keyId: number },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof deleteProfileKey>>,
+  TError,
+  { id: number; keyId: number },
+  TContext
+> => {
+  const mutationKey = ["deleteProfileKey"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof deleteProfileKey>>,
+    { id: number; keyId: number }
+  > = (props) => {
+    const { id, keyId } = props ?? {};
+
+    return deleteProfileKey(id, keyId, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type DeleteProfileKeyMutationResult = NonNullable<
+  Awaited<ReturnType<typeof deleteProfileKey>>
+>;
+
+export type DeleteProfileKeyMutationError = ErrorType<ErrorResponse>;
+
+/**
+ * @summary Remove an API key from a profile
+ */
+export const useDeleteProfileKey = <
+  TError = ErrorType<ErrorResponse>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof deleteProfileKey>>,
+    TError,
+    { id: number; keyId: number },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof deleteProfileKey>>,
+  TError,
+  { id: number; keyId: number },
+  TContext
+> => {
+  return useMutation(getDeleteProfileKeyMutationOptions(options));
+};
+
+/**
+ * @summary Manually rotate to next API key
+ */
+export const getRotateProfileKeyUrl = (id: number) => {
+  return `/api/profiles/${id}/rotate-key`;
+};
+
+export const rotateProfileKey = async (
+  id: number,
+  options?: RequestInit,
+): Promise<Profile> => {
+  return customFetch<Profile>(getRotateProfileKeyUrl(id), {
+    ...options,
+    method: "POST",
+  });
+};
+
+export const getRotateProfileKeyMutationOptions = <
+  TError = ErrorType<ErrorResponse>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof rotateProfileKey>>,
+    TError,
+    { id: number },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof rotateProfileKey>>,
+  TError,
+  { id: number },
+  TContext
+> => {
+  const mutationKey = ["rotateProfileKey"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof rotateProfileKey>>,
+    { id: number }
+  > = (props) => {
+    const { id } = props ?? {};
+
+    return rotateProfileKey(id, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type RotateProfileKeyMutationResult = NonNullable<
+  Awaited<ReturnType<typeof rotateProfileKey>>
+>;
+
+export type RotateProfileKeyMutationError = ErrorType<ErrorResponse>;
+
+/**
+ * @summary Manually rotate to next API key
+ */
+export const useRotateProfileKey = <
+  TError = ErrorType<ErrorResponse>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof rotateProfileKey>>,
+    TError,
+    { id: number },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof rotateProfileKey>>,
+  TError,
+  { id: number },
+  TContext
+> => {
+  return useMutation(getRotateProfileKeyMutationOptions(options));
+};

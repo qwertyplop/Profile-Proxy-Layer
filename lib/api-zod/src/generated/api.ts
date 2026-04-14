@@ -14,3 +14,156 @@ import * as zod from "zod";
 export const HealthCheckResponse = zod.object({
   status: zod.string(),
 });
+
+/**
+ * @summary List all profiles
+ */
+export const ListProfilesResponseItem = zod.object({
+  id: zod.number(),
+  name: zod.string(),
+  targetUrl: zod.string(),
+  currentKeyIndex: zod.number(),
+  createdAt: zod.string(),
+  updatedAt: zod.string(),
+  keys: zod.array(
+    zod.object({
+      id: zod.number(),
+      profileId: zod.number(),
+      label: zod.string().nullable(),
+      keyValue: zod.string(),
+      createdAt: zod.string(),
+    }),
+  ),
+});
+export const ListProfilesResponse = zod.array(ListProfilesResponseItem);
+
+/**
+ * @summary Create a profile
+ */
+export const CreateProfileBody = zod.object({
+  name: zod.string(),
+  targetUrl: zod.string(),
+});
+
+/**
+ * @summary Get a profile
+ */
+export const GetProfileParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const GetProfileResponse = zod.object({
+  id: zod.number(),
+  name: zod.string(),
+  targetUrl: zod.string(),
+  currentKeyIndex: zod.number(),
+  createdAt: zod.string(),
+  updatedAt: zod.string(),
+  keys: zod.array(
+    zod.object({
+      id: zod.number(),
+      profileId: zod.number(),
+      label: zod.string().nullable(),
+      keyValue: zod.string(),
+      createdAt: zod.string(),
+    }),
+  ),
+});
+
+/**
+ * @summary Update a profile
+ */
+export const UpdateProfileParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const UpdateProfileBody = zod.object({
+  name: zod.string().optional(),
+  targetUrl: zod.string().optional(),
+});
+
+export const UpdateProfileResponse = zod.object({
+  id: zod.number(),
+  name: zod.string(),
+  targetUrl: zod.string(),
+  currentKeyIndex: zod.number(),
+  createdAt: zod.string(),
+  updatedAt: zod.string(),
+  keys: zod.array(
+    zod.object({
+      id: zod.number(),
+      profileId: zod.number(),
+      label: zod.string().nullable(),
+      keyValue: zod.string(),
+      createdAt: zod.string(),
+    }),
+  ),
+});
+
+/**
+ * @summary Delete a profile
+ */
+export const DeleteProfileParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+/**
+ * @summary List API keys for a profile
+ */
+export const ListProfileKeysParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const ListProfileKeysResponseItem = zod.object({
+  id: zod.number(),
+  profileId: zod.number(),
+  label: zod.string().nullable(),
+  keyValue: zod.string(),
+  createdAt: zod.string(),
+});
+export const ListProfileKeysResponse = zod.array(ListProfileKeysResponseItem);
+
+/**
+ * @summary Add an API key to a profile
+ */
+export const AddProfileKeyParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const AddProfileKeyBody = zod.object({
+  keyValue: zod.string(),
+  label: zod.string().nullish(),
+});
+
+/**
+ * @summary Remove an API key from a profile
+ */
+export const DeleteProfileKeyParams = zod.object({
+  id: zod.coerce.number(),
+  keyId: zod.coerce.number(),
+});
+
+/**
+ * @summary Manually rotate to next API key
+ */
+export const RotateProfileKeyParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const RotateProfileKeyResponse = zod.object({
+  id: zod.number(),
+  name: zod.string(),
+  targetUrl: zod.string(),
+  currentKeyIndex: zod.number(),
+  createdAt: zod.string(),
+  updatedAt: zod.string(),
+  keys: zod.array(
+    zod.object({
+      id: zod.number(),
+      profileId: zod.number(),
+      label: zod.string().nullable(),
+      keyValue: zod.string(),
+      createdAt: zod.string(),
+    }),
+  ),
+});

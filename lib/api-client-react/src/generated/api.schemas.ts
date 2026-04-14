@@ -8,3 +8,42 @@
 export interface HealthStatus {
   status: string;
 }
+
+export interface ApiKey {
+  id: number;
+  profileId: number;
+  /** @nullable */
+  label: string | null;
+  keyValue: string;
+  createdAt: string;
+}
+
+export interface Profile {
+  id: number;
+  name: string;
+  targetUrl: string;
+  currentKeyIndex: number;
+  createdAt: string;
+  updatedAt: string;
+  keys: ApiKey[];
+}
+
+export interface CreateProfileBody {
+  name: string;
+  targetUrl: string;
+}
+
+export interface UpdateProfileBody {
+  name?: string;
+  targetUrl?: string;
+}
+
+export interface AddKeyBody {
+  keyValue: string;
+  /** @nullable */
+  label?: string | null;
+}
+
+export interface ErrorResponse {
+  error: string;
+}

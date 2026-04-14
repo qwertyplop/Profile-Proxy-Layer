@@ -6,4 +6,10 @@
  * OpenAPI spec version: 0.1.0
  */
 
+export * from "./addKeyBody";
+export * from "./apiKey";
+export * from "./createProfileBody";
+export * from "./errorResponse";
 export * from "./healthStatus";
+export * from "./profile";
+export * from "./updateProfileBody";
