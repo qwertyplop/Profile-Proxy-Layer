@@ -29,10 +29,16 @@ async function userCount(): Promise<number> {
 }
 
 router.get("/auth/status", async (req, res): Promise<void> => {
-  const count = await userCount();
+  let count = 0;
+  try {
+    count = await userCount();
+  } catch {
+    // Tables may not yet exist (e.g. fresh remix). Treat as no users.
+    count = 0;
+  }
   res.json({
     registrationOpen: count === 0,
-    authenticated: Boolean(req.userId),
+    authenticated: count > 0 && Boolean(req.userId),
     username: req.username ?? null,
   });
 });
