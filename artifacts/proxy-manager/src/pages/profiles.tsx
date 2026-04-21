@@ -160,7 +160,7 @@ function CreateProfileDialog({
         onError: (err) => {
           toast({
             title: "Error creating profile",
-            description: err.error || "An unknown error occurred",
+            description: err.data?.error || "An unknown error occurred",
             variant: "destructive",
           });
         },

@@ -182,7 +182,7 @@ router.post("/v1/chat/completions", requireLayerAuth, async (req, res): Promise<
     res.setHeader(headerKey, value);
   });
 
-  const isStream = forwardedBody.stream === true;
+  const isStream = (forwardedBody as Record<string, unknown>).stream === true;
 
   if (isStream && upstream.body) {
     res.setHeader("Cache-Control", "no-cache");

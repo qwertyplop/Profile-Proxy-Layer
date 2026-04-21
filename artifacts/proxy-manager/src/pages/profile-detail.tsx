@@ -231,7 +231,7 @@ function UpdateProfileForm({ profile }: { profile: any }) {
         onError: (err) => {
           toast({
             title: "Error updating profile",
-            description: err.error || "Unknown error",
+            description: err.data?.error || "Unknown error",
             variant: "destructive",
           });
         },
@@ -302,7 +302,7 @@ function KeyRow({ apiKey, isActive, profileId }: { apiKey: any; isActive: boolea
           toast({ title: "Key deleted" });
         },
         onError: (err) => {
-          toast({ title: "Error deleting key", description: err.error || "Unknown error", variant: "destructive" });
+          toast({ title: "Error deleting key", description: err.data?.error || "Unknown error", variant: "destructive" });
         }
       }
     );
@@ -318,7 +318,7 @@ function KeyRow({ apiKey, isActive, profileId }: { apiKey: any; isActive: boolea
           setEditOpen(false);
         },
         onError: (err) => {
-          toast({ title: "Error updating key", description: err.error || "Unknown error", variant: "destructive" });
+          toast({ title: "Error updating key", description: err.data?.error || "Unknown error", variant: "destructive" });
         }
       }
     );
@@ -429,7 +429,7 @@ function AddKeyDialog({ id }: { id: number }) {
         onError: (err) => {
           toast({
             title: "Error adding key",
-            description: err.error || "Unknown error",
+            description: err.data?.error || "Unknown error",
             variant: "destructive",
           });
         },
@@ -504,7 +504,7 @@ function RotateKeyButton({ id }: { id: number }) {
         onError: (err) => {
           toast({
             title: "Error rotating key",
-            description: err.error || "Unknown error",
+            description: err.data?.error || "Unknown error",
             variant: "destructive",
           });
         }
@@ -544,7 +544,7 @@ function DeleteProfileButton({ id }: { id: number }) {
         onError: (err) => {
           toast({
             title: "Error deleting profile",
-            description: err.error || "Unknown error",
+            description: err.data?.error || "Unknown error",
             variant: "destructive",
           });
         }
