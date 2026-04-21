@@ -38,10 +38,14 @@ export async function attachUser(
   _res: Response,
   next: NextFunction,
 ): Promise<void> {
-  const session = await loadSession(req);
-  if (session) {
-    req.userId = session.userId;
-    req.username = session.username;
+  try {
+    const session = await loadSession(req);
+    if (session) {
+      req.userId = session.userId;
+      req.username = session.username;
+    }
+  } catch {
+    // Tables may not yet exist on a fresh remix; skip silently.
   }
   next();
 }

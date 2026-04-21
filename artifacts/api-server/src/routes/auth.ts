@@ -1,9 +1,22 @@
 import { Router, type IRouter } from "express";
 import { randomBytes } from "node:crypto";
 import { eq } from "drizzle-orm";
-import { db, usersTable, sessionsTable } from "@workspace/db";
+import { db, usersTable, sessionsTable, ensureSchema } from "@workspace/db";
 import { hashPassword, verifyPassword } from "../lib/passwords";
 import { SESSION_COOKIE } from "../middlewares/auth";
+
+async function withSchemaRetry<T>(fn: () => Promise<T>): Promise<T> {
+  try {
+    return await fn();
+  } catch (err) {
+    const msg = (err as Error)?.message ?? "";
+    if (/relation .* does not exist|no such table/i.test(msg)) {
+      await ensureSchema();
+      return await fn();
+    }
+    throw err;
+  }
+}
 
 const router: IRouter = Router();
 
@@ -31,9 +44,8 @@ async function userCount(): Promise<number> {
 router.get("/auth/status", async (req, res): Promise<void> => {
   let count = 0;
   try {
-    count = await userCount();
+    count = await withSchemaRetry(() => userCount());
   } catch {
-    // Tables may not yet exist (e.g. fresh remix). Treat as no users.
     count = 0;
   }
   res.json({
@@ -58,24 +70,35 @@ router.post("/auth/register", async (req, res): Promise<void> => {
     return;
   }
 
-  if ((await userCount()) > 0) {
-    res.status(403).json({
-      error: "Registration is closed. An owner account already exists.",
+  try {
+    const result = await withSchemaRetry(async () => {
+      if ((await userCount()) > 0) {
+        return { closed: true } as const;
+      }
+      const [user] = await db
+        .insert(usersTable)
+        .values({ username: username.trim(), passwordHash: hashPassword(password) })
+        .returning();
+
+      const sid = randomBytes(32).toString("hex");
+      const expiresAt = new Date(Date.now() + SESSION_TTL_MS);
+      await db.insert(sessionsTable).values({ id: sid, userId: user.id, expiresAt });
+      return { closed: false, user, sid, expiresAt } as const;
     });
-    return;
+
+    if (result.closed) {
+      res.status(403).json({
+        error: "Registration is closed. An owner account already exists.",
+      });
+      return;
+    }
+
+    setSessionCookie(res, result.sid, result.expiresAt);
+    res.json({ username: result.user.username });
+  } catch (err) {
+    req.log?.error({ err }, "Register failed");
+    res.status(500).json({ error: "Failed to create account. Please try again." });
   }
-
-  const [user] = await db
-    .insert(usersTable)
-    .values({ username: username.trim(), passwordHash: hashPassword(password) })
-    .returning();
-
-  const sid = randomBytes(32).toString("hex");
-  const expiresAt = new Date(Date.now() + SESSION_TTL_MS);
-  await db.insert(sessionsTable).values({ id: sid, userId: user.id, expiresAt });
-
-  setSessionCookie(res, sid, expiresAt);
-  res.json({ username: user.username });
 });
 
 router.post("/auth/login", async (req, res): Promise<void> => {
@@ -89,22 +112,34 @@ router.post("/auth/login", async (req, res): Promise<void> => {
     return;
   }
 
-  const [user] = await db
-    .select()
-    .from(usersTable)
-    .where(eq(usersTable.username, username.trim()));
+  try {
+    const result = await withSchemaRetry(async () => {
+      const [user] = await db
+        .select()
+        .from(usersTable)
+        .where(eq(usersTable.username, username.trim()));
 
-  if (!user || !verifyPassword(password, user.passwordHash)) {
-    res.status(401).json({ error: "Invalid username or password." });
-    return;
+      if (!user || !verifyPassword(password, user.passwordHash)) {
+        return null;
+      }
+
+      const sid = randomBytes(32).toString("hex");
+      const expiresAt = new Date(Date.now() + SESSION_TTL_MS);
+      await db.insert(sessionsTable).values({ id: sid, userId: user.id, expiresAt });
+      return { user, sid, expiresAt };
+    });
+
+    if (!result) {
+      res.status(401).json({ error: "Invalid username or password." });
+      return;
+    }
+
+    setSessionCookie(res, result.sid, result.expiresAt);
+    res.json({ username: result.user.username });
+  } catch (err) {
+    req.log?.error({ err }, "Login failed");
+    res.status(500).json({ error: "Login failed. Please try again." });
   }
-
-  const sid = randomBytes(32).toString("hex");
-  const expiresAt = new Date(Date.now() + SESSION_TTL_MS);
-  await db.insert(sessionsTable).values({ id: sid, userId: user.id, expiresAt });
-
-  setSessionCookie(res, sid, expiresAt);
-  res.json({ username: user.username });
 });
 
 router.post("/auth/logout", async (req, res): Promise<void> => {
