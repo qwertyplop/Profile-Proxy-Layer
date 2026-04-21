@@ -51,6 +51,12 @@ pnpm workspace monorepo using TypeScript. A profile-based LLM API proxy manager 
 - `access-keys.ts` — CRUD for layer access keys at `/api/access-keys`
 
 ### Middlewares (`artifacts/api-server/src/middlewares/`)
-- `auth.ts` — `requireLayerAuth`: checks `layer_access_keys` table; open if empty, else validates `Bearer` token
+- `auth.ts` — session-based user auth (`attachUser`, `requireAuth`) and `requireLayerAuth` for `/v1/*`
+
+### Owner Auth
+- `users` + `sessions` tables. First registration creates the owner; further registrations are blocked.
+- Routes: `/api/auth/status`, `/register`, `/login`, `/logout`. Session via HttpOnly cookie (`session_id`), 30-day TTL.
+- Passwords hashed with scrypt (`artifacts/api-server/src/lib/passwords.ts`).
+- Management routes (`/api/profiles*`, `/api/access-keys*`) require an authenticated session. `/v1/*` and `/api/proxy/*` are unaffected.
 
 See the `pnpm-workspace` skill for workspace structure, TypeScript setup, and package details.

@@ -3,12 +3,15 @@ import healthRouter from "./health";
 import profilesRouter from "./profiles";
 import proxyRouter from "./proxy";
 import accessKeysRouter from "./access-keys";
+import authRouter from "./auth";
+import { requireAuth } from "../middlewares/auth";
 
 const router: IRouter = Router();
 
 router.use(healthRouter);
-router.use(profilesRouter);
+router.use(authRouter);
 router.use(proxyRouter);
-router.use(accessKeysRouter);
+router.use(requireAuth, profilesRouter);
+router.use(requireAuth, accessKeysRouter);
 
 export default router;

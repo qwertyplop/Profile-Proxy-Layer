@@ -1,9 +1,11 @@
 import { ReactNode } from "react";
 import { Link, useLocation } from "wouter";
-import { Server, Settings, ShieldCheck } from "lucide-react";
+import { LogOut, Server, Settings, ShieldCheck, User } from "lucide-react";
+import { useAuth } from "@/hooks/use-auth";
 
 export function Layout({ children }: { children: ReactNode }) {
   const [location] = useLocation();
+  const { username, logout } = useAuth();
 
   const navItem = (href: string, label: string, Icon: React.ElementType, active: boolean) => (
     <Link
@@ -32,7 +34,21 @@ export function Layout({ children }: { children: ReactNode }) {
             {navItem("/access-keys", "Access Keys", ShieldCheck, location.startsWith("/access-keys"))}
           </nav>
         </div>
-        <div className="p-4 border-t border-border mt-auto">
+        <div className="p-4 border-t border-border mt-auto space-y-2">
+          {username && (
+            <div className="flex items-center gap-2 text-foreground text-xs">
+              <User className="w-4 h-4" />
+              <span className="truncate">{username}</span>
+            </div>
+          )}
+          <button
+            type="button"
+            onClick={() => { void logout(); }}
+            className="flex w-full items-center gap-2 text-muted-foreground hover:text-foreground text-xs transition-colors"
+          >
+            <LogOut className="w-4 h-4" />
+            <span>Sign out</span>
+          </button>
           <div className="flex items-center gap-2 text-muted-foreground text-xs">
             <Settings className="w-4 h-4" />
             <span>v1.0.0-rc</span>

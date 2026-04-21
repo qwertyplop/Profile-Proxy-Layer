@@ -8,6 +8,8 @@ import { Layout } from "@/components/layout";
 import Profiles from "@/pages/profiles";
 import ProfileDetail from "@/pages/profile-detail";
 import AccessKeys from "@/pages/access-keys";
+import AuthPage from "@/pages/auth";
+import { AuthProvider, useAuth } from "@/hooks/use-auth";
 
 const queryClient = new QueryClient();
 
@@ -22,15 +24,37 @@ function Router() {
   );
 }
 
+function Gate() {
+  const { loading, authenticated } = useAuth();
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background font-mono text-muted-foreground text-sm">
+        Loading…
+      </div>
+    );
+  }
+
+  if (!authenticated) {
+    return <AuthPage />;
+  }
+
+  return (
+    <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, "")}>
+      <Layout>
+        <Router />
+      </Layout>
+    </WouterRouter>
+  );
+}
+
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
-        <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, "")}>
-          <Layout>
-            <Router />
-          </Layout>
-        </WouterRouter>
+        <AuthProvider>
+          <Gate />
+        </AuthProvider>
         <Toaster />
       </TooltipProvider>
     </QueryClientProvider>

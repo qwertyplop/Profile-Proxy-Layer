@@ -9,28 +9,6 @@ args = ["pnpm", "store", "prune"]
 env = { "CI" = "true" }
 
 [workflows]
-runButton = "Project"
-
-[[workflows.workflow]]
-name = "Project"
-mode = "parallel"
-author = "agent"
-
-[[workflows.workflow.tasks]]
-task = "workflow.run"
-args = "Start application"
-
-[[workflows.workflow]]
-name = "Start application"
-author = "agent"
-
-[workflows.workflow.metadata]
-outputType = "webview"
-
-[[workflows.workflow.tasks]]
-task = "shell.exec"
-args = "PORT=26124 BASE_PATH=/ pnpm --filter @workspace/proxy-manager run dev & PORT=8080 pnpm --filter @workspace/api-server run dev & wait"
-waitForPort = 8080
 
 [agent]
 stack = "PNPM_WORKSPACE"
@@ -51,6 +29,14 @@ externalPort = 80
 [[ports]]
 localPort = 26124
 externalPort = 3000
+
+[[ports]]
+localPort = 26125
+externalPort = 3001
+
+[[ports]]
+localPort = 26126
+externalPort = 3002
 
 [nix]
 channel = "stable-25_05"
