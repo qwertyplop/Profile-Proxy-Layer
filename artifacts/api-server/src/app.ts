@@ -1,4 +1,4 @@
-import express, { type Express } from "express";
+import express, { type Express, type Request, type Response, type NextFunction } from "express";
 import cors from "cors";
 import cookieParser from "cookie-parser";
 import pinoHttp from "pino-http";
@@ -36,5 +36,18 @@ app.use(attachUser);
 
 app.use("/api", router);
 app.use("/", v1Router);
+
+app.use("/api", (_req: Request, res: Response) => {
+  res.status(404).json({ error: "Not found" });
+});
+
+app.use(
+  "/api",
+  (err: Error, req: Request, res: Response, _next: NextFunction) => {
+    req.log?.error({ err }, "Unhandled API error");
+    if (res.headersSent) return;
+    res.status(500).json({ error: err.message || "Internal server error" });
+  },
+);
 
 export default app;
