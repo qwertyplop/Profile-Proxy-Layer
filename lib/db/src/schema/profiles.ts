@@ -7,6 +7,7 @@ export const profilesTable = pgTable("profiles", {
   name: text("name").notNull(),
   targetUrl: text("target_url").notNull(),
   currentKeyIndex: integer("current_key_index").notNull().default(0),
+  rotationMode: text("rotation_mode").notNull().default("round-robin"),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow().$onUpdate(() => new Date()),
 });

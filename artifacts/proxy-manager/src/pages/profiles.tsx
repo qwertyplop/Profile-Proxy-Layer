@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link } from "wouter";
-import { Plus, Server, KeyRound, ArrowRight, Activity, Terminal } from "lucide-react";
+import { Plus, Server, KeyRound, ArrowRight, Activity, Terminal, Boxes, Repeat, Hand } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -79,13 +79,26 @@ export default function Profiles() {
                   <div className="absolute top-0 left-0 w-1 h-full bg-primary opacity-0 group-hover:opacity-100 transition-opacity" />
                   
                   <div className="flex justify-between items-start mb-4">
-                    <div className="flex items-center gap-2">
-                      <Terminal className="w-4 h-4 text-primary" />
+                    <div className="flex items-center gap-2 min-w-0">
+                      <Terminal className="w-4 h-4 text-primary shrink-0" />
                       <h3 className="font-bold text-base truncate">{profile.name}</h3>
                     </div>
-                    <ArrowRight className="w-4 h-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
+                    <div className="flex items-center gap-1 shrink-0">
+                      <span
+                        className="inline-flex items-center gap-1 text-[10px] uppercase tracking-wider px-1.5 py-0.5 rounded border border-border bg-secondary/40 text-muted-foreground font-semibold"
+                        title={`Key rotation: ${profile.rotationMode}`}
+                      >
+                        {profile.rotationMode === "manual" ? (
+                          <Hand className="w-3 h-3" />
+                        ) : (
+                          <Repeat className="w-3 h-3" />
+                        )}
+                        {profile.rotationMode === "manual" ? "Manual" : "Auto"}
+                      </span>
+                      <ArrowRight className="w-4 h-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
+                    </div>
                   </div>
-                  
+
                   <div className="space-y-3">
                     <div>
                       <div className="text-xs text-muted-foreground mb-1 font-semibold uppercase tracking-wider">Target</div>
@@ -93,8 +106,8 @@ export default function Profiles() {
                         {profile.targetUrl}
                       </div>
                     </div>
-                    
-                    <div className="grid grid-cols-2 gap-4">
+
+                    <div className="grid grid-cols-3 gap-3">
                       <div>
                         <div className="text-xs text-muted-foreground mb-1 flex items-center gap-1 font-semibold uppercase tracking-wider">
                           <KeyRound className="w-3 h-3" />
@@ -106,11 +119,23 @@ export default function Profiles() {
                       </div>
                       <div>
                         <div className="text-xs text-muted-foreground mb-1 flex items-center gap-1 font-semibold uppercase tracking-wider">
-                          <Activity className="w-3 h-3" />
-                          Active Idx
+                          <Boxes className="w-3 h-3" />
+                          Models
                         </div>
                         <div className="text-sm font-medium">
-                          {profile.currentKeyIndex}
+                          {profile.enabledModelCount}
+                          {profile.modelCount !== profile.enabledModelCount && (
+                            <span className="text-muted-foreground"> / {profile.modelCount}</span>
+                          )}
+                        </div>
+                      </div>
+                      <div>
+                        <div className="text-xs text-muted-foreground mb-1 flex items-center gap-1 font-semibold uppercase tracking-wider">
+                          <Activity className="w-3 h-3" />
+                          Active
+                        </div>
+                        <div className="text-sm font-medium">
+                          #{profile.currentKeyIndex}
                         </div>
                       </div>
                     </div>

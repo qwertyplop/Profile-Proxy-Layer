@@ -14,6 +14,8 @@ tags:
     description: Proxy profile management
   - name: keys
     description: API key management
+  - name: models
+    description: Per-profile model management
   - name: access-keys
     description: Layer-level access key management
 paths:
@@ -196,7 +198,7 @@ paths:
     patch:
       operationId: updateProfileKey
       tags: [keys]
-      summary: Update an API key's value or label
+      summary: Update an API key's value, label, or disabled state
       parameters:
         - name: id
           in: path
@@ -270,6 +272,147 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Profile"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /profiles/{id}/models:
+    get:
+      operationId: listProfileModels
+      tags: [models]
+      summary: List models for a profile
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: List of models
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ProfileModel"
+    post:
+      operationId: addProfileModel
+      tags: [models]
+      summary: Add a manual model to a profile
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AddModelBody"
+      responses:
+        "201":
+          description: Added model
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProfileModel"
+        "400":
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /profiles/{id}/models/{modelId}:
+    patch:
+      operationId: updateProfileModel
+      tags: [models]
+      summary: Update a model (toggle disabled)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: modelId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateModelBody"
+      responses:
+        "200":
+          description: Updated model
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProfileModel"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    delete:
+      operationId: deleteProfileModel
+      tags: [models]
+      summary: Delete a manual model
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: modelId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /profiles/{id}/models/refresh:
+    post:
+      operationId: refreshProfileModels
+      tags: [models]
+      summary: Refresh models from upstream provider
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Refreshed model list
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RefreshModelsResponse"
+        "400":
+          description: Upstream error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
         "404":
           description: Not found
           content:
@@ -351,6 +494,9 @@ components:
           type: string
         currentKeyIndex:
           type: integer
+        rotationMode:
+          type: string
+          enum: [round-robin, manual]
         createdAt:
           type: string
         updatedAt:
@@ -359,14 +505,21 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/ApiKey"
+        modelCount:
+          type: integer
+        enabledModelCount:
+          type: integer
       required:
         - id
         - name
         - targetUrl
         - currentKeyIndex
+        - rotationMode
         - createdAt
         - updatedAt
         - keys
+        - modelCount
+        - enabledModelCount
 
     ApiKey:
       type: object
@@ -379,6 +532,8 @@ components:
           type: ["string", "null"]
         keyValue:
           type: string
+        disabled:
+          type: boolean
         createdAt:
           type: string
       required:
@@ -386,6 +541,31 @@ components:
         - profileId
         - label
         - keyValue
+        - disabled
+        - createdAt
+
+    ProfileModel:
+      type: object
+      properties:
+        id:
+          type: integer
+        profileId:
+          type: integer
+        modelName:
+          type: string
+        source:
+          type: string
+          enum: [fetched, manual]
+        disabled:
+          type: boolean
+        createdAt:
+          type: string
+      required:
+        - id
+        - profileId
+        - modelName
+        - source
+        - disabled
         - createdAt
 
     CreateProfileBody:
@@ -406,6 +586,9 @@ components:
           type: string
         targetUrl:
           type: string
+        rotationMode:
+          type: string
+          enum: [round-robin, manual]
 
     AddKeyBody:
       type: object
@@ -441,7 +624,43 @@ components:
           type: string
         label:
           type: ["string", "null"]
+        disabled:
+          type: boolean
       required: []
+
+    AddModelBody:
+      type: object
+      properties:
+        modelName:
+          type: string
+      required:
+        - modelName
+
+    UpdateModelBody:
+      type: object
+      properties:
+        disabled:
+          type: boolean
+      required: []
+
+    RefreshModelsResponse:
+      type: object
+      properties:
+        added:
+          type: integer
+        removed:
+          type: integer
+        total:
+          type: integer
+        models:
+          type: array
+          items:
+            $ref: "#/components/schemas/ProfileModel"
+      required:
+        - added
+        - removed
+        - total
+        - models
 
     CreateAccessKeyBody:
       type: object

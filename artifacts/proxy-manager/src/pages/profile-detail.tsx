@@ -1,22 +1,26 @@
-import { useState, useMemo } from "react";
+import { useState } from "react";
 import { useRoute, Link } from "wouter";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { useQueryClient } from "@tanstack/react-query";
-import { 
-  ArrowLeft, 
-  Trash2, 
-  KeyRound, 
-  RefreshCw, 
-  Plus, 
-  Eye, 
+import {
+  ArrowLeft,
+  Trash2,
+  KeyRound,
+  RefreshCw,
+  Plus,
+  Eye,
   EyeOff,
   Copy,
   Check,
   Settings,
   AlertTriangle,
   Pencil,
+  Power,
+  PowerOff,
+  Boxes,
+  Download,
 } from "lucide-react";
 
 import {
@@ -24,19 +28,24 @@ import {
   getGetProfileQueryKey,
   useUpdateProfile,
   useDeleteProfile,
-  useListProfileKeys,
-  getListProfileKeysQueryKey,
   useAddProfileKey,
   useDeleteProfileKey,
   useUpdateProfileKey,
   useRotateProfileKey,
   getListProfilesQueryKey,
+  useListProfileModels,
+  getListProfileModelsQueryKey,
+  useAddProfileModel,
+  useUpdateProfileModel,
+  useDeleteProfileModel,
+  useRefreshProfileModels,
 } from "@workspace/api-client-react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Switch } from "@/components/ui/switch";
 import {
   Dialog,
   DialogContent,
@@ -55,6 +64,13 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
   AlertDialog,
   AlertDialogAction,
   AlertDialogCancel,
@@ -70,6 +86,7 @@ import { useToast } from "@/hooks/use-toast";
 const updateProfileSchema = z.object({
   name: z.string().min(1, "Name is required").regex(/^[a-zA-Z0-9-]+$/, "Only alphanumeric characters and hyphens allowed"),
   targetUrl: z.string().url("Must be a valid URL"),
+  rotationMode: z.enum(["round-robin", "manual"]),
 });
 
 const addKeySchema = z.object({
@@ -82,12 +99,16 @@ const editKeySchema = z.object({
   label: z.string().optional(),
 });
 
+const addModelSchema = z.object({
+  modelName: z.string().min(1, "Model name is required"),
+});
+
 export default function ProfileDetail() {
   const [, params] = useRoute("/profiles/:id");
   const id = params?.id ? parseInt(params.id, 10) : 0;
-  
+
   const { data: profile, isLoading, isError } = useGetProfile(id, {
-    query: { enabled: !!id, queryKey: getGetProfileQueryKey(id), retry: false }
+    query: { enabled: !!id, queryKey: getGetProfileQueryKey(id), retry: false },
   });
 
   if (isLoading) {
@@ -124,6 +145,13 @@ export default function ProfileDetail() {
             <Badge variant="outline" className="font-mono text-xs text-muted-foreground ml-2">
               ID: {profile.id}
             </Badge>
+            <Badge
+              variant="secondary"
+              className="font-mono text-xs ml-1"
+              title="Key rotation mode"
+            >
+              {profile.rotationMode}
+            </Badge>
           </h1>
         </div>
         <div className="flex items-center gap-2">
@@ -133,8 +161,7 @@ export default function ProfileDetail() {
       </div>
 
       <div className="flex-1 overflow-auto p-6">
-        <div className="max-w-5xl mx-auto space-y-8">
-          
+        <div className="max-w-6xl mx-auto space-y-8">
           <div className="grid gap-6 md:grid-cols-2">
             <div className="space-y-6">
               <section className="bg-card border border-border rounded-lg p-6">
@@ -148,7 +175,7 @@ export default function ProfileDetail() {
               <section className="bg-card border border-border rounded-lg p-6">
                 <h2 className="text-sm font-bold uppercase tracking-wider text-muted-foreground mb-4">SillyTavern Setup</h2>
                 <p className="text-sm text-muted-foreground mb-3">
-                  Point SillyTavern (or any OpenAI-compatible client) to the unified endpoint below. Models from all profiles are listed as <span className="font-mono text-primary">ProfileName - ModelName</span> — select one and requests are routed here automatically with round-robin key rotation.
+                  Point SillyTavern (or any OpenAI-compatible client) to the unified endpoint below. Models from all profiles are listed as <span className="font-mono text-primary">ProfileName - ModelName</span> — select one and requests are routed here automatically.
                 </p>
                 <div className="bg-secondary/50 border border-border rounded p-3 font-mono text-sm mb-3">
                   <div className="flex items-center justify-between gap-2">
@@ -168,7 +195,7 @@ export default function ProfileDetail() {
             </div>
 
             <div className="space-y-6">
-              <section className="bg-card border border-border rounded-lg flex flex-col h-full max-h-[600px]">
+              <section className="bg-card border border-border rounded-lg flex flex-col max-h-[600px]">
                 <div className="p-4 border-b border-border flex items-center justify-between shrink-0">
                   <div className="flex items-center gap-2">
                     <KeyRound className="w-5 h-5 text-primary" />
@@ -177,7 +204,7 @@ export default function ProfileDetail() {
                   </div>
                   <AddKeyDialog id={id} />
                 </div>
-                
+
                 <div className="flex-1 overflow-auto p-4 space-y-2">
                   {profile.keys.length === 0 ? (
                     <div className="text-center py-8 text-muted-foreground border border-dashed border-border rounded-lg bg-card/30">
@@ -187,10 +214,10 @@ export default function ProfileDetail() {
                     </div>
                   ) : (
                     profile.keys.map((key, idx) => (
-                      <KeyRow 
-                        key={key.id} 
-                        apiKey={key} 
-                        isActive={idx === profile.currentKeyIndex}
+                      <KeyRow
+                        key={key.id}
+                        apiKey={key}
+                        isActive={idx === profile.currentKeyIndex && !key.disabled}
                         profileId={id}
                       />
                     ))
@@ -200,6 +227,7 @@ export default function ProfileDetail() {
             </div>
           </div>
 
+          <ModelsSection profileId={id} profileName={profile.name} />
         </div>
       </div>
     </div>
@@ -216,6 +244,7 @@ function UpdateProfileForm({ profile }: { profile: any }) {
     defaultValues: {
       name: profile.name,
       targetUrl: profile.targetUrl,
+      rotationMode: (profile.rotationMode as "round-robin" | "manual") ?? "round-robin",
     },
   });
 
@@ -227,6 +256,7 @@ function UpdateProfileForm({ profile }: { profile: any }) {
           queryClient.setQueryData(getGetProfileQueryKey(profile.id), data);
           queryClient.invalidateQueries({ queryKey: getListProfilesQueryKey() });
           toast({ title: "Profile updated" });
+          form.reset(values);
         },
         onError: (err) => {
           toast({
@@ -235,7 +265,7 @@ function UpdateProfileForm({ profile }: { profile: any }) {
             variant: "destructive",
           });
         },
-      }
+      },
     );
   };
 
@@ -268,8 +298,32 @@ function UpdateProfileForm({ profile }: { profile: any }) {
             </FormItem>
           )}
         />
-        <Button 
-          type="submit" 
+        <FormField
+          control={form.control}
+          name="rotationMode"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel className="text-xs uppercase text-muted-foreground font-semibold">Key Rotation</FormLabel>
+              <Select value={field.value} onValueChange={field.onChange}>
+                <FormControl>
+                  <SelectTrigger className="font-mono bg-background">
+                    <SelectValue />
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent className="font-mono">
+                  <SelectItem value="round-robin">Round-robin (auto-cycle on each request)</SelectItem>
+                  <SelectItem value="manual">Manual (always use active key)</SelectItem>
+                </SelectContent>
+              </Select>
+              <p className="text-xs text-muted-foreground mt-1">
+                In manual mode, the active key never changes automatically. Disable individual keys below to skip them in either mode.
+              </p>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <Button
+          type="submit"
           disabled={updateProfile.isPending || !form.formState.isDirty}
           className="w-full"
         >
@@ -303,8 +357,23 @@ function KeyRow({ apiKey, isActive, profileId }: { apiKey: any; isActive: boolea
         },
         onError: (err) => {
           toast({ title: "Error deleting key", description: err.data?.error || "Unknown error", variant: "destructive" });
-        }
-      }
+        },
+      },
+    );
+  };
+
+  const handleToggleDisabled = () => {
+    updateKey.mutate(
+      { id: profileId, keyId: apiKey.id, data: { disabled: !apiKey.disabled } },
+      {
+        onSuccess: () => {
+          queryClient.invalidateQueries({ queryKey: getGetProfileQueryKey(profileId) });
+          toast({ title: !apiKey.disabled ? "Key disabled" : "Key enabled" });
+        },
+        onError: (err) => {
+          toast({ title: "Error updating key", description: err.data?.error || "Unknown error", variant: "destructive" });
+        },
+      },
     );
   };
 
@@ -319,37 +388,74 @@ function KeyRow({ apiKey, isActive, profileId }: { apiKey: any; isActive: boolea
         },
         onError: (err) => {
           toast({ title: "Error updating key", description: err.data?.error || "Unknown error", variant: "destructive" });
-        }
-      }
+        },
+      },
     );
   };
 
   return (
     <>
-      <div className={`p-3 rounded border font-mono text-sm flex items-center justify-between transition-colors ${
-        isActive 
-          ? "bg-primary/10 border-primary/50 text-foreground" 
-          : "bg-secondary/30 border-border text-foreground hover:bg-secondary/50"
-      }`}>
+      <div
+        className={`p-3 rounded border font-mono text-sm flex items-center justify-between transition-colors ${
+          apiKey.disabled
+            ? "bg-secondary/10 border-border/50 text-muted-foreground opacity-70"
+            : isActive
+              ? "bg-primary/10 border-primary/50 text-foreground"
+              : "bg-secondary/30 border-border text-foreground hover:bg-secondary/50"
+        }`}
+      >
         <div className="flex flex-col min-w-0 gap-1 flex-1 pr-2">
-          <div className="flex items-center gap-2">
-            {isActive && <div className="w-2 h-2 rounded-full bg-primary animate-pulse" />}
-            {apiKey.label && <span className="font-bold text-xs uppercase tracking-wider">{apiKey.label}</span>}
-            {!apiKey.label && <span className="text-xs uppercase tracking-wider opacity-50">Unnamed Key</span>}
+          <div className="flex items-center gap-2 flex-wrap">
+            {isActive && !apiKey.disabled && <div className="w-2 h-2 rounded-full bg-primary animate-pulse" />}
+            {apiKey.label ? (
+              <span className="font-bold text-xs uppercase tracking-wider">{apiKey.label}</span>
+            ) : (
+              <span className="text-xs uppercase tracking-wider opacity-50">Unnamed Key</span>
+            )}
+            {apiKey.disabled && (
+              <Badge variant="outline" className="text-[10px] py-0 px-1.5 h-4">disabled</Badge>
+            )}
           </div>
           <div className="truncate">
             {show ? apiKey.keyValue : "••••••••••••••••••••••••••••••"}
           </div>
         </div>
-        
+
         <div className="flex items-center gap-1 shrink-0">
-          <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setShow(!show)}>
+          <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setShow(!show)} title={show ? "Hide" : "Reveal"}>
             {show ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
           </Button>
-          <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-foreground" onClick={() => { editForm.reset({ keyValue: apiKey.keyValue, label: apiKey.label ?? "" }); setEditOpen(true); }}>
+          <CopyIconButton text={apiKey.keyValue} title="Copy key" />
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-8 w-8"
+            onClick={handleToggleDisabled}
+            disabled={updateKey.isPending}
+            title={apiKey.disabled ? "Enable (include in rotation)" : "Disable (skip in rotation)"}
+          >
+            {apiKey.disabled ? <Power className="w-4 h-4" /> : <PowerOff className="w-4 h-4" />}
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-8 w-8 text-muted-foreground hover:text-foreground"
+            onClick={() => {
+              editForm.reset({ keyValue: apiKey.keyValue, label: apiKey.label ?? "" });
+              setEditOpen(true);
+            }}
+            title="Edit"
+          >
             <Pencil className="w-4 h-4" />
           </Button>
-          <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive hover:text-destructive hover:bg-destructive/10" onClick={handleDelete} disabled={deleteKey.isPending}>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-8 w-8 text-destructive hover:text-destructive hover:bg-destructive/10"
+            onClick={handleDelete}
+            disabled={deleteKey.isPending}
+            title="Delete"
+          >
             <Trash2 className="w-4 h-4" />
           </Button>
         </div>
@@ -410,10 +516,7 @@ function AddKeyDialog({ id }: { id: number }) {
 
   const form = useForm<z.infer<typeof addKeySchema>>({
     resolver: zodResolver(addKeySchema),
-    defaultValues: {
-      keyValue: "",
-      label: "",
-    },
+    defaultValues: { keyValue: "", label: "" },
   });
 
   const onSubmit = (values: z.infer<typeof addKeySchema>) => {
@@ -433,7 +536,7 @@ function AddKeyDialog({ id }: { id: number }) {
             variant: "destructive",
           });
         },
-      }
+      },
     );
   };
 
@@ -488,6 +591,270 @@ function AddKeyDialog({ id }: { id: number }) {
   );
 }
 
+function ModelsSection({ profileId, profileName }: { profileId: number; profileName: string }) {
+  const { data: models = [], isLoading } = useListProfileModels(profileId, {
+    query: { queryKey: getListProfileModelsQueryKey(profileId) },
+  });
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
+  const refresh = useRefreshProfileModels();
+  const updateModel = useUpdateProfileModel();
+  const deleteModel = useDeleteProfileModel();
+
+  const [addOpen, setAddOpen] = useState(false);
+  const [filter, setFilter] = useState("");
+
+  const invalidate = () => {
+    queryClient.invalidateQueries({ queryKey: getListProfileModelsQueryKey(profileId) });
+    queryClient.invalidateQueries({ queryKey: getGetProfileQueryKey(profileId) });
+    queryClient.invalidateQueries({ queryKey: getListProfilesQueryKey() });
+  };
+
+  const handleRefresh = () => {
+    refresh.mutate(
+      { id: profileId },
+      {
+        onSuccess: (data) => {
+          invalidate();
+          toast({
+            title: "Models refreshed",
+            description: `${data.added} added, ${data.removed} removed (total ${data.total}).`,
+          });
+        },
+        onError: (err) => {
+          toast({
+            title: "Failed to fetch models",
+            description: err.data?.error || "The provider may not expose /models. Add models manually instead.",
+            variant: "destructive",
+          });
+        },
+      },
+    );
+  };
+
+  const handleToggle = (modelId: number, disabled: boolean) => {
+    updateModel.mutate(
+      { id: profileId, modelId, data: { disabled } },
+      {
+        onSuccess: () => {
+          invalidate();
+        },
+        onError: (err) => {
+          toast({ title: "Error updating model", description: err.data?.error || "Unknown error", variant: "destructive" });
+        },
+      },
+    );
+  };
+
+  const handleDelete = (modelId: number) => {
+    deleteModel.mutate(
+      { id: profileId, modelId },
+      {
+        onSuccess: () => {
+          invalidate();
+          toast({ title: "Model removed" });
+        },
+        onError: (err) => {
+          toast({ title: "Error deleting model", description: err.data?.error || "Unknown error", variant: "destructive" });
+        },
+      },
+    );
+  };
+
+  const filtered = filter
+    ? models.filter((m) => m.modelName.toLowerCase().includes(filter.toLowerCase()))
+    : models;
+
+  const enabledCount = models.filter((m) => !m.disabled).length;
+
+  return (
+    <section className="bg-card border border-border rounded-lg flex flex-col">
+      <div className="p-4 border-b border-border flex items-center justify-between gap-3 flex-wrap">
+        <div className="flex items-center gap-2">
+          <Boxes className="w-5 h-5 text-primary" />
+          <h2 className="text-lg font-bold">Models</h2>
+          <Badge variant="secondary" className="ml-2">
+            {enabledCount} / {models.length} enabled
+          </Badge>
+        </div>
+        <div className="flex items-center gap-2">
+          <Input
+            placeholder="Filter…"
+            value={filter}
+            onChange={(e) => setFilter(e.target.value)}
+            className="h-8 w-44 font-mono text-xs bg-background"
+          />
+          <Button
+            size="sm"
+            variant="outline"
+            className="gap-1 h-8 text-xs"
+            onClick={handleRefresh}
+            disabled={refresh.isPending}
+          >
+            <Download className={`w-3 h-3 ${refresh.isPending ? "animate-pulse" : ""}`} />
+            {refresh.isPending ? "Fetching…" : "Fetch from upstream"}
+          </Button>
+          <AddModelDialog id={profileId} open={addOpen} onOpenChange={setAddOpen} onAdded={invalidate} />
+        </div>
+      </div>
+
+      <div className="p-4">
+        <p className="text-xs text-muted-foreground mb-3">
+          Models listed here are exposed via <span className="font-mono text-primary">/v1/models</span> as
+          <span className="font-mono text-primary"> {profileName} - &lt;name&gt;</span>. Disabled ones are hidden from clients. If the provider doesn't expose <span className="font-mono">/models</span>, add entries by hand.
+        </p>
+
+        {isLoading ? (
+          <Skeleton className="h-24 w-full" />
+        ) : models.length === 0 ? (
+          <div className="text-center py-10 text-muted-foreground border border-dashed border-border rounded-lg bg-card/30">
+            <Boxes className="w-8 h-8 mx-auto mb-2 opacity-50" />
+            <p className="text-sm">No models registered.</p>
+            <p className="text-xs mt-1">Fetch from upstream or add one manually.</p>
+          </div>
+        ) : (
+          <div className="grid gap-2 md:grid-cols-2">
+            {filtered.map((m) => (
+              <div
+                key={m.id}
+                className={`flex items-center justify-between gap-2 px-3 py-2 rounded border font-mono text-sm ${
+                  m.disabled
+                    ? "bg-secondary/10 border-border/50 text-muted-foreground"
+                    : "bg-secondary/30 border-border text-foreground"
+                }`}
+              >
+                <div className="min-w-0 flex-1">
+                  <div className="truncate">{m.modelName}</div>
+                  <div className="flex items-center gap-2 mt-0.5">
+                    <Badge
+                      variant="outline"
+                      className="text-[10px] py-0 px-1.5 h-4 capitalize"
+                    >
+                      {m.source}
+                    </Badge>
+                    {m.disabled && (
+                      <span className="text-[10px] uppercase tracking-wider text-muted-foreground">
+                        hidden from /v1/models
+                      </span>
+                    )}
+                  </div>
+                </div>
+                <div className="flex items-center gap-1 shrink-0">
+                  <Switch
+                    checked={!m.disabled}
+                    onCheckedChange={(checked) => handleToggle(m.id, !checked)}
+                    disabled={updateModel.isPending}
+                    title={m.disabled ? "Enable" : "Disable"}
+                  />
+                  <CopyIconButton text={`${profileName} - ${m.modelName}`} title="Copy full model id" />
+                  {m.source === "manual" && (
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-8 w-8 text-destructive hover:text-destructive hover:bg-destructive/10"
+                      onClick={() => handleDelete(m.id)}
+                      disabled={deleteModel.isPending}
+                      title="Delete manual model"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </Button>
+                  )}
+                </div>
+              </div>
+            ))}
+            {filtered.length === 0 && (
+              <div className="md:col-span-2 text-center text-xs text-muted-foreground py-4">
+                No models match "{filter}".
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+    </section>
+  );
+}
+
+function AddModelDialog({
+  id,
+  open,
+  onOpenChange,
+  onAdded,
+}: {
+  id: number;
+  open: boolean;
+  onOpenChange: (o: boolean) => void;
+  onAdded: () => void;
+}) {
+  const { toast } = useToast();
+  const addModel = useAddProfileModel();
+
+  const form = useForm<z.infer<typeof addModelSchema>>({
+    resolver: zodResolver(addModelSchema),
+    defaultValues: { modelName: "" },
+  });
+
+  const onSubmit = (values: z.infer<typeof addModelSchema>) => {
+    addModel.mutate(
+      { id, data: { modelName: values.modelName } },
+      {
+        onSuccess: () => {
+          onAdded();
+          toast({ title: "Model added" });
+          onOpenChange(false);
+          form.reset();
+        },
+        onError: (err) => {
+          toast({
+            title: "Error adding model",
+            description: err.data?.error || "Unknown error",
+            variant: "destructive",
+          });
+        },
+      },
+    );
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogTrigger asChild>
+        <Button size="sm" className="gap-1 h-8 text-xs">
+          <Plus className="w-3 h-3" /> Add Manual
+        </Button>
+      </DialogTrigger>
+      <DialogContent className="sm:max-w-[425px] font-mono">
+        <DialogHeader>
+          <DialogTitle>Add Model</DialogTitle>
+          <DialogDescription>
+            Use this when the provider doesn't expose <span className="font-mono">/v1/models</span> or you want to expose a model that isn't auto-discovered.
+          </DialogDescription>
+        </DialogHeader>
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 pt-2">
+            <FormField
+              control={form.control}
+              name="modelName"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Model name</FormLabel>
+                  <FormControl>
+                    <Input placeholder="e.g. claude-opus-4" {...field} className="font-mono text-sm" />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <DialogFooter className="pt-2">
+              <Button type="submit" disabled={addModel.isPending}>
+                {addModel.isPending ? "Adding…" : "Add Model"}
+              </Button>
+            </DialogFooter>
+          </form>
+        </Form>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
 function RotateKeyButton({ id }: { id: number }) {
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -507,16 +874,16 @@ function RotateKeyButton({ id }: { id: number }) {
             description: err.data?.error || "Unknown error",
             variant: "destructive",
           });
-        }
-      }
+        },
+      },
     );
   };
 
   return (
-    <Button 
-      variant="outline" 
-      size="sm" 
-      onClick={handleRotate} 
+    <Button
+      variant="outline"
+      size="sm"
+      onClick={handleRotate}
       disabled={rotateKey.isPending}
       className="gap-2 bg-background"
     >
@@ -530,7 +897,6 @@ function DeleteProfileButton({ id }: { id: number }) {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const deleteProfile = useDeleteProfile();
-  const [, setLocation] = useRoute("/profiles/:id");
 
   const handleDelete = () => {
     deleteProfile.mutate(
@@ -547,8 +913,8 @@ function DeleteProfileButton({ id }: { id: number }) {
             description: err.data?.error || "Unknown error",
             variant: "destructive",
           });
-        }
-      }
+        },
+      },
     );
   };
 
@@ -564,13 +930,13 @@ function DeleteProfileButton({ id }: { id: number }) {
         <AlertDialogHeader>
           <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
           <AlertDialogDescription>
-            This action cannot be undone. This will permanently delete the profile and all associated API keys.
+            This action cannot be undone. This will permanently delete the profile and all associated API keys and models.
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
           <AlertDialogCancel>Cancel</AlertDialogCancel>
-          <AlertDialogAction 
-            onClick={handleDelete} 
+          <AlertDialogAction
+            onClick={handleDelete}
             className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             disabled={deleteProfile.isPending}
           >
@@ -592,11 +958,33 @@ function CopyButton({ text }: { text: string }) {
   };
 
   return (
-    <Button 
-      variant="ghost" 
-      size="icon" 
-      onClick={handleCopy} 
+    <Button
+      variant="ghost"
+      size="icon"
+      onClick={handleCopy}
       className="h-8 w-8 text-muted-foreground hover:text-primary hover:bg-primary/10 shrink-0"
+    >
+      {copied ? <Check className="w-4 h-4 text-green-500" /> : <Copy className="w-4 h-4" />}
+    </Button>
+  );
+}
+
+function CopyIconButton({ text, title }: { text: string; title?: string }) {
+  const [copied, setCopied] = useState(false);
+
+  const handleCopy = () => {
+    navigator.clipboard.writeText(text);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 1500);
+  };
+
+  return (
+    <Button
+      variant="ghost"
+      size="icon"
+      onClick={handleCopy}
+      className="h-8 w-8"
+      title={title ?? "Copy"}
     >
       {copied ? <Check className="w-4 h-4 text-green-500" /> : <Copy className="w-4 h-4" />}
     </Button>

@@ -9,12 +9,21 @@ export interface HealthStatus {
   status: string;
 }
 
+export type ProfileRotationMode =
+  (typeof ProfileRotationMode)[keyof typeof ProfileRotationMode];
+
+export const ProfileRotationMode = {
+  "round-robin": "round-robin",
+  manual: "manual",
+} as const;
+
 export interface ApiKey {
   id: number;
   profileId: number;
   /** @nullable */
   label: string | null;
   keyValue: string;
+  disabled: boolean;
   createdAt: string;
 }
 
@@ -23,9 +32,29 @@ export interface Profile {
   name: string;
   targetUrl: string;
   currentKeyIndex: number;
+  rotationMode: ProfileRotationMode;
   createdAt: string;
   updatedAt: string;
   keys: ApiKey[];
+  modelCount: number;
+  enabledModelCount: number;
+}
+
+export type ProfileModelSource =
+  (typeof ProfileModelSource)[keyof typeof ProfileModelSource];
+
+export const ProfileModelSource = {
+  fetched: "fetched",
+  manual: "manual",
+} as const;
+
+export interface ProfileModel {
+  id: number;
+  profileId: number;
+  modelName: string;
+  source: ProfileModelSource;
+  disabled: boolean;
+  createdAt: string;
 }
 
 export interface CreateProfileBody {
@@ -33,9 +62,18 @@ export interface CreateProfileBody {
   targetUrl: string;
 }
 
+export type UpdateProfileBodyRotationMode =
+  (typeof UpdateProfileBodyRotationMode)[keyof typeof UpdateProfileBodyRotationMode];
+
+export const UpdateProfileBodyRotationMode = {
+  "round-robin": "round-robin",
+  manual: "manual",
+} as const;
+
 export interface UpdateProfileBody {
   name?: string;
   targetUrl?: string;
+  rotationMode?: UpdateProfileBodyRotationMode;
 }
 
 export interface AddKeyBody {
@@ -56,6 +94,22 @@ export interface UpdateProfileKeyBody {
   keyValue?: string;
   /** @nullable */
   label?: string | null;
+  disabled?: boolean;
+}
+
+export interface AddModelBody {
+  modelName: string;
+}
+
+export interface UpdateModelBody {
+  disabled?: boolean;
+}
+
+export interface RefreshModelsResponse {
+  added: number;
+  removed: number;
+  total: number;
+  models: ProfileModel[];
 }
 
 export interface CreateAccessKeyBody {

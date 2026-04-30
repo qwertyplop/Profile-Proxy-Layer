@@ -1,7 +1,7 @@
 import { Router, type IRouter } from "express";
-import { eq, asc, and } from "drizzle-orm";
+import { eq, asc, and, sql } from "drizzle-orm";
 import { db } from "@workspace/db";
-import { profilesTable, apiKeysTable } from "@workspace/db";
+import { profilesTable, apiKeysTable, modelsTable } from "@workspace/db";
 import {
   CreateProfileBody,
   GetProfileParams,
@@ -18,6 +18,18 @@ import {
 
 const router: IRouter = Router();
 
+async function getModelCounts(profileId: number) {
+  const rows = await db
+    .select({
+      total: sql<number>`COUNT(*)::int`,
+      enabled: sql<number>`COUNT(*) FILTER (WHERE ${modelsTable.disabled} = FALSE)::int`,
+    })
+    .from(modelsTable)
+    .where(eq(modelsTable.profileId, profileId));
+  const r = rows[0] ?? { total: 0, enabled: 0 };
+  return { modelCount: r.total ?? 0, enabledModelCount: r.enabled ?? 0 };
+}
+
 async function getProfileWithKeys(id: number) {
   const profile = await db
     .select()
@@ -33,7 +45,8 @@ async function getProfileWithKeys(id: number) {
     .where(eq(apiKeysTable.profileId, id))
     .orderBy(asc(apiKeysTable.createdAt));
 
-  return { ...profile, keys };
+  const counts = await getModelCounts(id);
+  return { ...profile, keys, ...counts };
 }
 
 router.get("/profiles", async (_req, res): Promise<void> => {
@@ -49,7 +62,8 @@ router.get("/profiles", async (_req, res): Promise<void> => {
         .from(apiKeysTable)
         .where(eq(apiKeysTable.profileId, p.id))
         .orderBy(asc(apiKeysTable.createdAt));
-      return { ...p, keys };
+      const counts = await getModelCounts(p.id);
+      return { ...p, keys, ...counts };
     }),
   );
 
@@ -71,7 +85,7 @@ router.post("/profiles", async (req, res): Promise<void> => {
     })
     .returning();
 
-  res.status(201).json({ ...profile, keys: [] });
+  res.status(201).json({ ...profile, keys: [], modelCount: 0, enabledModelCount: 0 });
 });
 
 router.get("/profiles/:id", async (req, res): Promise<void> => {
@@ -107,6 +121,8 @@ router.patch("/profiles/:id", async (req, res): Promise<void> => {
   if (parsed.data.name !== undefined) updateData.name = parsed.data.name;
   if (parsed.data.targetUrl !== undefined)
     updateData.targetUrl = parsed.data.targetUrl;
+  if (parsed.data.rotationMode !== undefined)
+    updateData.rotationMode = parsed.data.rotationMode;
 
   if (Object.keys(updateData).length === 0) {
     const profile = await getProfileWithKeys(params.data.id);
@@ -232,6 +248,7 @@ router.patch("/profiles/:id/keys/:keyId", async (req, res): Promise<void> => {
   const updates: Record<string, unknown> = {};
   if (body.data.keyValue !== undefined) updates.keyValue = body.data.keyValue.trim();
   if (body.data.label !== undefined) updates.label = body.data.label;
+  if (body.data.disabled !== undefined) updates.disabled = body.data.disabled;
 
   if (Object.keys(updates).length === 0) {
     res.status(400).json({ error: "No fields to update" });
@@ -301,15 +318,30 @@ router.post("/profiles/:id/rotate-key", async (req, res): Promise<void> => {
     return;
   }
 
-  const nextIndex = (profile.currentKeyIndex + 1) % keys.length;
+  const enabledIndices: number[] = [];
+  keys.forEach((k, i) => {
+    if (!k.disabled) enabledIndices.push(i);
+  });
+
+  if (enabledIndices.length === 0) {
+    res.status(400).json({ error: "No enabled keys to rotate" });
+    return;
+  }
+
+  const currentPos = enabledIndices.indexOf(profile.currentKeyIndex);
+  const nextEnabledIdx =
+    currentPos === -1
+      ? enabledIndices[0]
+      : enabledIndices[(currentPos + 1) % enabledIndices.length];
 
   const [updated] = await db
     .update(profilesTable)
-    .set({ currentKeyIndex: nextIndex })
+    .set({ currentKeyIndex: nextEnabledIdx })
     .where(eq(profilesTable.id, params.data.id))
     .returning();
 
-  res.json({ ...updated, keys });
+  const counts = await getModelCounts(updated.id);
+  res.json({ ...updated, keys, ...counts });
 });
 
 export default router;

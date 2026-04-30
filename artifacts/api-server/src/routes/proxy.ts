@@ -32,14 +32,36 @@ router.all("/proxy/:profileName/{*splat}", async (req, res): Promise<void> => {
     return;
   }
 
-  const currentIndex = profile.currentKeyIndex % keys.length;
-  const currentKey = keys[currentIndex];
+  const enabled: { idx: number; key: typeof keys[number] }[] = [];
+  keys.forEach((k, i) => {
+    if (!k.disabled) enabled.push({ idx: i, key: k });
+  });
 
-  const nextIndex = (currentIndex + 1) % keys.length;
-  await db
-    .update(profilesTable)
-    .set({ currentKeyIndex: nextIndex })
-    .where(eq(profilesTable.id, profile.id));
+  if (enabled.length === 0) {
+    res.status(400).json({ error: "No enabled API keys for this profile" });
+    return;
+  }
+
+  const currentPos = enabled.findIndex((e) => e.idx === profile.currentKeyIndex);
+  const useEntry = currentPos === -1 ? enabled[0] : enabled[currentPos];
+  const currentKey = useEntry.key;
+  const usedIdx = useEntry.idx;
+
+  if (profile.rotationMode === "round-robin") {
+    const nextEntry =
+      currentPos === -1
+        ? (enabled[1] ?? enabled[0])
+        : enabled[(currentPos + 1) % enabled.length];
+    await db
+      .update(profilesTable)
+      .set({ currentKeyIndex: nextEntry.idx })
+      .where(eq(profilesTable.id, profile.id));
+  } else if (currentPos === -1) {
+    await db
+      .update(profilesTable)
+      .set({ currentKeyIndex: usedIdx })
+      .where(eq(profilesTable.id, profile.id));
+  }
 
   const targetPath = splat ? `/${splat}` : "";
   const targetUrl = `${profile.targetUrl.replace(/\/$/, "")}${targetPath}`;
@@ -73,7 +95,10 @@ router.all("/proxy/:profileName/{*splat}", async (req, res): Promise<void> => {
     forwardHeaders["Content-Length"] = Buffer.byteLength(bodyContent).toString();
   }
 
-  req.log.info({ profile: profileName, targetUrl: fullUrl, keyIndex: currentIndex }, "Forwarding proxy request");
+  req.log.info(
+    { profile: profileName, targetUrl: fullUrl, keyIndex: usedIdx, rotationMode: profile.rotationMode },
+    "Forwarding proxy request",
+  );
 
   const upstream = await fetch(fullUrl, {
     method: req.method,

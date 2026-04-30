@@ -6,13 +6,17 @@
  * OpenAPI spec version: 0.1.0
  */
 import type { ApiKey } from "./apiKey";
+import type { ProfileRotationMode } from "./profileRotationMode";
 
 export interface Profile {
   id: number;
   name: string;
   targetUrl: string;
   currentKeyIndex: number;
+  rotationMode: ProfileRotationMode;
   createdAt: string;
   updatedAt: string;
   keys: ApiKey[];
+  modelCount: number;
+  enabledModelCount: number;
 }

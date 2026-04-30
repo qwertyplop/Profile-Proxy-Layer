@@ -1,21 +1,46 @@
 import { Router, type IRouter } from "express";
-import { eq, asc } from "drizzle-orm";
+import { eq, asc, and } from "drizzle-orm";
 import { db } from "@workspace/db";
-import { profilesTable, apiKeysTable } from "@workspace/db";
-import { logger } from "../lib/logger";
+import { profilesTable, apiKeysTable, modelsTable } from "@workspace/db";
 import { requireLayerAuth } from "../middlewares/auth";
 
 const router: IRouter = Router();
 
-async function getProfileKey(profileId: number, currentIndex: number, keys: { id: number; keyValue: string }[]) {
-  const idx = currentIndex % keys.length;
-  const key = keys[idx];
-  const nextIndex = (idx + 1) % keys.length;
-  await db
-    .update(profilesTable)
-    .set({ currentKeyIndex: nextIndex })
-    .where(eq(profilesTable.id, profileId));
-  return { key, idx };
+async function pickKeyAndMaybeAdvance(
+  profileId: number,
+  rotationMode: string,
+  currentIndex: number,
+  keys: { id: number; keyValue: string; disabled: boolean }[],
+) {
+  const enabled: { idx: number; key: typeof keys[number] }[] = [];
+  keys.forEach((k, i) => {
+    if (!k.disabled) enabled.push({ idx: i, key: k });
+  });
+  if (enabled.length === 0) return null;
+
+  const currentPos = enabled.findIndex((e) => e.idx === currentIndex);
+  const useEntry = currentPos === -1 ? enabled[0] : enabled[currentPos];
+
+  if (rotationMode === "round-robin") {
+    const nextEntry =
+      currentPos === -1
+        ? (enabled[1] ?? enabled[0])
+        : enabled[(currentPos + 1) % enabled.length];
+    await db
+      .update(profilesTable)
+      .set({ currentKeyIndex: nextEntry.idx })
+      .where(eq(profilesTable.id, profileId));
+  } else if (currentPos === -1) {
+    // In manual mode, if the current pointer somehow lands on a disabled
+    // key (e.g. user just disabled it), snap forward to the first enabled
+    // one but do not auto-advance afterward.
+    await db
+      .update(profilesTable)
+      .set({ currentKeyIndex: useEntry.idx })
+      .where(eq(profilesTable.id, profileId));
+  }
+
+  return { key: useEntry.key, idx: useEntry.idx };
 }
 
 function buildForwardHeaders(req: import("express").Request, keyValue: string): Record<string, string> {
@@ -35,67 +60,26 @@ function buildForwardHeaders(req: import("express").Request, keyValue: string): 
   return headers;
 }
 
-router.get("/v1/models", requireLayerAuth, async (req, res): Promise<void> => {
-  const profiles = await db
-    .select()
-    .from(profilesTable)
-    .orderBy(asc(profilesTable.createdAt));
+router.get("/v1/models", requireLayerAuth, async (_req, res): Promise<void> => {
+  const rows = await db
+    .select({
+      profileName: profilesTable.name,
+      modelName: modelsTable.modelName,
+      createdAt: modelsTable.createdAt,
+    })
+    .from(modelsTable)
+    .innerJoin(profilesTable, eq(profilesTable.id, modelsTable.profileId))
+    .where(eq(modelsTable.disabled, false))
+    .orderBy(asc(profilesTable.name), asc(modelsTable.modelName));
 
-  if (profiles.length === 0) {
-    res.json({ object: "list", data: [] });
-    return;
-  }
+  const data = rows.map((r) => ({
+    id: `${r.profileName} - ${r.modelName}`,
+    object: "model",
+    owned_by: r.profileName,
+    created: Math.floor(new Date(r.createdAt).getTime() / 1000),
+  }));
 
-  const allModels: { id: string; object: string; owned_by: string; created: number }[] = [];
-
-  await Promise.all(
-    profiles.map(async (profile) => {
-      const keys = await db
-        .select()
-        .from(apiKeysTable)
-        .where(eq(apiKeysTable.profileId, profile.id))
-        .orderBy(asc(apiKeysTable.createdAt));
-
-      if (keys.length === 0) return;
-
-      const { key, idx } = await getProfileKey(profile.id, profile.currentKeyIndex, keys);
-
-      const modelsUrl = `${profile.targetUrl.replace(/\/$/, "")}/models`;
-
-      try {
-        const upstream = await fetch(modelsUrl, {
-          headers: {
-            Authorization: `Bearer ${key.keyValue}`,
-            "Content-Type": "application/json",
-          },
-          signal: AbortSignal.timeout(10000),
-        });
-
-        if (!upstream.ok) {
-          req.log.warn({ profile: profile.name, status: upstream.status }, "Models fetch failed");
-          return;
-        }
-
-        const body = (await upstream.json()) as { data?: { id: string; object?: string; owned_by?: string; created?: number }[] };
-        const data = Array.isArray(body?.data) ? body.data : [];
-
-        for (const model of data) {
-          allModels.push({
-            id: `${profile.name} - ${model.id}`,
-            object: "model",
-            owned_by: profile.name,
-            created: model.created ?? Math.floor(Date.now() / 1000),
-          });
-        }
-      } catch (err) {
-        logger.warn({ profile: profile.name, err }, "Failed to fetch models from profile");
-      }
-
-      void idx;
-    }),
-  );
-
-  res.json({ object: "list", data: allModels });
+  res.json({ object: "list", data });
 });
 
 router.post("/v1/chat/completions", requireLayerAuth, async (req, res): Promise<void> => {
@@ -134,6 +118,33 @@ router.post("/v1/chat/completions", requireLayerAuth, async (req, res): Promise<
     return;
   }
 
+  // Verify the model is enabled for this profile (if any are tracked).
+  const tracked = await db
+    .select()
+    .from(modelsTable)
+    .where(eq(modelsTable.profileId, profile.id));
+  if (tracked.length > 0) {
+    const found = tracked.find((m) => m.modelName === actualModel);
+    if (!found) {
+      res.status(404).json({
+        error: {
+          message: `Model "${actualModel}" is not registered for profile "${profileName}".`,
+          type: "invalid_request_error",
+        },
+      });
+      return;
+    }
+    if (found.disabled) {
+      res.status(403).json({
+        error: {
+          message: `Model "${actualModel}" is disabled for profile "${profileName}".`,
+          type: "invalid_request_error",
+        },
+      });
+      return;
+    }
+  }
+
   const keys = await db
     .select()
     .from(apiKeysTable)
@@ -150,7 +161,22 @@ router.post("/v1/chat/completions", requireLayerAuth, async (req, res): Promise<
     return;
   }
 
-  const { key, idx } = await getProfileKey(profile.id, profile.currentKeyIndex, keys);
+  const picked = await pickKeyAndMaybeAdvance(
+    profile.id,
+    profile.rotationMode,
+    profile.currentKeyIndex,
+    keys,
+  );
+  if (!picked) {
+    res.status(400).json({
+      error: {
+        message: `No enabled API keys for profile "${profileName}".`,
+        type: "invalid_request_error",
+      },
+    });
+    return;
+  }
+  const { key, idx } = picked;
 
   const targetUrl = `${profile.targetUrl.replace(/\/$/, "")}/chat/completions`;
   const queryString = req.url.includes("?") ? req.url.substring(req.url.indexOf("?")) : "";
@@ -164,7 +190,14 @@ router.post("/v1/chat/completions", requireLayerAuth, async (req, res): Promise<
   headers["Content-Length"] = Buffer.byteLength(bodyContent).toString();
 
   req.log.info(
-    { profile: profileName, model: actualModel, keyIndex: idx, targetUrl: fullUrl, requestBody: forwardedBody },
+    {
+      profile: profileName,
+      model: actualModel,
+      keyIndex: idx,
+      rotationMode: profile.rotationMode,
+      targetUrl: fullUrl,
+      requestBody: forwardedBody,
+    },
     "Forwarding chat/completions request",
   );
 
@@ -214,5 +247,7 @@ router.post("/v1/chat/completions", requireLayerAuth, async (req, res): Promise<
     res.send(Buffer.from(responseBody));
   }
 });
+
+void and;
 
 export default router;

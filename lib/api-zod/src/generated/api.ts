@@ -23,6 +23,7 @@ export const ListProfilesResponseItem = zod.object({
   name: zod.string(),
   targetUrl: zod.string(),
   currentKeyIndex: zod.number(),
+  rotationMode: zod.enum(["round-robin", "manual"]),
   createdAt: zod.string(),
   updatedAt: zod.string(),
   keys: zod.array(
@@ -31,9 +32,12 @@ export const ListProfilesResponseItem = zod.object({
       profileId: zod.number(),
       label: zod.string().nullable(),
       keyValue: zod.string(),
+      disabled: zod.boolean(),
       createdAt: zod.string(),
     }),
   ),
+  modelCount: zod.number(),
+  enabledModelCount: zod.number(),
 });
 export const ListProfilesResponse = zod.array(ListProfilesResponseItem);
 
@@ -57,6 +61,7 @@ export const GetProfileResponse = zod.object({
   name: zod.string(),
   targetUrl: zod.string(),
   currentKeyIndex: zod.number(),
+  rotationMode: zod.enum(["round-robin", "manual"]),
   createdAt: zod.string(),
   updatedAt: zod.string(),
   keys: zod.array(
@@ -65,9 +70,12 @@ export const GetProfileResponse = zod.object({
       profileId: zod.number(),
       label: zod.string().nullable(),
       keyValue: zod.string(),
+      disabled: zod.boolean(),
       createdAt: zod.string(),
     }),
   ),
+  modelCount: zod.number(),
+  enabledModelCount: zod.number(),
 });
 
 /**
@@ -80,6 +88,7 @@ export const UpdateProfileParams = zod.object({
 export const UpdateProfileBody = zod.object({
   name: zod.string().optional(),
   targetUrl: zod.string().optional(),
+  rotationMode: zod.enum(["round-robin", "manual"]).optional(),
 });
 
 export const UpdateProfileResponse = zod.object({
@@ -87,6 +96,7 @@ export const UpdateProfileResponse = zod.object({
   name: zod.string(),
   targetUrl: zod.string(),
   currentKeyIndex: zod.number(),
+  rotationMode: zod.enum(["round-robin", "manual"]),
   createdAt: zod.string(),
   updatedAt: zod.string(),
   keys: zod.array(
@@ -95,9 +105,12 @@ export const UpdateProfileResponse = zod.object({
       profileId: zod.number(),
       label: zod.string().nullable(),
       keyValue: zod.string(),
+      disabled: zod.boolean(),
       createdAt: zod.string(),
     }),
   ),
+  modelCount: zod.number(),
+  enabledModelCount: zod.number(),
 });
 
 /**
@@ -119,6 +132,7 @@ export const ListProfileKeysResponseItem = zod.object({
   profileId: zod.number(),
   label: zod.string().nullable(),
   keyValue: zod.string(),
+  disabled: zod.boolean(),
   createdAt: zod.string(),
 });
 export const ListProfileKeysResponse = zod.array(ListProfileKeysResponseItem);
@@ -136,7 +150,7 @@ export const AddProfileKeyBody = zod.object({
 });
 
 /**
- * @summary Update an API key's value or label
+ * @summary Update an API key's value, label, or disabled state
  */
 export const UpdateProfileKeyParams = zod.object({
   id: zod.coerce.number(),
@@ -146,6 +160,7 @@ export const UpdateProfileKeyParams = zod.object({
 export const UpdateProfileKeyBody = zod.object({
   keyValue: zod.string().optional(),
   label: zod.string().nullish(),
+  disabled: zod.boolean().optional(),
 });
 
 export const UpdateProfileKeyResponse = zod.object({
@@ -153,6 +168,7 @@ export const UpdateProfileKeyResponse = zod.object({
   profileId: zod.number(),
   label: zod.string().nullable(),
   keyValue: zod.string(),
+  disabled: zod.boolean(),
   createdAt: zod.string(),
 });
 
@@ -176,6 +192,7 @@ export const RotateProfileKeyResponse = zod.object({
   name: zod.string(),
   targetUrl: zod.string(),
   currentKeyIndex: zod.number(),
+  rotationMode: zod.enum(["round-robin", "manual"]),
   createdAt: zod.string(),
   updatedAt: zod.string(),
   keys: zod.array(
@@ -184,6 +201,91 @@ export const RotateProfileKeyResponse = zod.object({
       profileId: zod.number(),
       label: zod.string().nullable(),
       keyValue: zod.string(),
+      disabled: zod.boolean(),
+      createdAt: zod.string(),
+    }),
+  ),
+  modelCount: zod.number(),
+  enabledModelCount: zod.number(),
+});
+
+/**
+ * @summary List models for a profile
+ */
+export const ListProfileModelsParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const ListProfileModelsResponseItem = zod.object({
+  id: zod.number(),
+  profileId: zod.number(),
+  modelName: zod.string(),
+  source: zod.enum(["fetched", "manual"]),
+  disabled: zod.boolean(),
+  createdAt: zod.string(),
+});
+export const ListProfileModelsResponse = zod.array(
+  ListProfileModelsResponseItem,
+);
+
+/**
+ * @summary Add a manual model to a profile
+ */
+export const AddProfileModelParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const AddProfileModelBody = zod.object({
+  modelName: zod.string(),
+});
+
+/**
+ * @summary Update a model (toggle disabled)
+ */
+export const UpdateProfileModelParams = zod.object({
+  id: zod.coerce.number(),
+  modelId: zod.coerce.number(),
+});
+
+export const UpdateProfileModelBody = zod.object({
+  disabled: zod.boolean().optional(),
+});
+
+export const UpdateProfileModelResponse = zod.object({
+  id: zod.number(),
+  profileId: zod.number(),
+  modelName: zod.string(),
+  source: zod.enum(["fetched", "manual"]),
+  disabled: zod.boolean(),
+  createdAt: zod.string(),
+});
+
+/**
+ * @summary Delete a manual model
+ */
+export const DeleteProfileModelParams = zod.object({
+  id: zod.coerce.number(),
+  modelId: zod.coerce.number(),
+});
+
+/**
+ * @summary Refresh models from upstream provider
+ */
+export const RefreshProfileModelsParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const RefreshProfileModelsResponse = zod.object({
+  added: zod.number(),
+  removed: zod.number(),
+  total: zod.number(),
+  models: zod.array(
+    zod.object({
+      id: zod.number(),
+      profileId: zod.number(),
+      modelName: zod.string(),
+      source: zod.enum(["fetched", "manual"]),
+      disabled: zod.boolean(),
       createdAt: zod.string(),
     }),
   ),

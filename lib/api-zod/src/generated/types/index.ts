@@ -7,6 +7,7 @@
  */
 
 export * from "./addKeyBody";
+export * from "./addModelBody";
 export * from "./apiKey";
 export * from "./createAccessKeyBody";
 export * from "./createProfileBody";
@@ -14,5 +15,11 @@ export * from "./errorResponse";
 export * from "./healthStatus";
 export * from "./layerAccessKey";
 export * from "./profile";
+export * from "./profileModel";
+export * from "./profileModelSource";
+export * from "./profileRotationMode";
+export * from "./refreshModelsResponse";
+export * from "./updateModelBody";
 export * from "./updateProfileBody";
+export * from "./updateProfileBodyRotationMode";
 export * from "./updateProfileKeyBody";

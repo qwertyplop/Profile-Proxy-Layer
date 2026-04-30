@@ -5,13 +5,13 @@
  * API specification
  * OpenAPI spec version: 0.1.0
  */
+import type { ProfileModelSource } from "./profileModelSource";
 
-export interface ApiKey {
+export interface ProfileModel {
   id: number;
   profileId: number;
-  /** @nullable */
-  label: string | null;
-  keyValue: string;
+  modelName: string;
+  source: ProfileModelSource;
   disabled: boolean;
   createdAt: string;
 }
