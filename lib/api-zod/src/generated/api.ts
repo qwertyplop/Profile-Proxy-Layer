@@ -240,6 +240,21 @@ export const AddProfileModelBody = zod.object({
 });
 
 /**
+ * @summary Bulk enable or disable all models for a profile
+ */
+export const BulkUpdateProfileModelsParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const BulkUpdateProfileModelsBody = zod.object({
+  disabled: zod.boolean(),
+});
+
+export const BulkUpdateProfileModelsResponse = zod.object({
+  updated: zod.number(),
+});
+
+/**
  * @summary Update a model (toggle disabled)
  */
 export const UpdateProfileModelParams = zod.object({

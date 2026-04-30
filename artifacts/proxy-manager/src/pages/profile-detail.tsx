@@ -21,6 +21,8 @@ import {
   PowerOff,
   Boxes,
   Download,
+  ToggleLeft,
+  ToggleRight,
 } from "lucide-react";
 
 import {
@@ -39,6 +41,7 @@ import {
   useUpdateProfileModel,
   useDeleteProfileModel,
   useRefreshProfileModels,
+  useBulkUpdateProfileModels,
 } from "@workspace/api-client-react";
 
 import { Button } from "@/components/ui/button";
@@ -603,11 +606,27 @@ function ModelsSection({ profileId, profileName }: { profileId: number; profileN
 
   const [addOpen, setAddOpen] = useState(false);
   const [filter, setFilter] = useState("");
+  const bulkUpdate = useBulkUpdateProfileModels();
 
   const invalidate = () => {
     queryClient.invalidateQueries({ queryKey: getListProfileModelsQueryKey(profileId) });
     queryClient.invalidateQueries({ queryKey: getGetProfileQueryKey(profileId) });
     queryClient.invalidateQueries({ queryKey: getListProfilesQueryKey() });
+  };
+
+  const handleBulk = (disabled: boolean) => {
+    bulkUpdate.mutate(
+      { id: profileId, data: { disabled } },
+      {
+        onSuccess: (data) => {
+          invalidate();
+          toast({ title: disabled ? `Disabled all ${data.updated} models` : `Enabled all ${data.updated} models` });
+        },
+        onError: (err) => {
+          toast({ title: "Bulk update failed", description: err.data?.error || "Unknown error", variant: "destructive" });
+        },
+      },
+    );
   };
 
   const handleRefresh = () => {
@@ -684,6 +703,28 @@ function ModelsSection({ profileId, profileName }: { profileId: number; profileN
             onChange={(e) => setFilter(e.target.value)}
             className="h-8 w-44 font-mono text-xs bg-background"
           />
+          <Button
+            size="sm"
+            variant="outline"
+            className="gap-1 h-8 text-xs"
+            onClick={() => handleBulk(false)}
+            disabled={bulkUpdate.isPending || models.length === 0}
+            title="Enable all models"
+          >
+            <ToggleRight className="w-3 h-3" />
+            Enable all
+          </Button>
+          <Button
+            size="sm"
+            variant="outline"
+            className="gap-1 h-8 text-xs"
+            onClick={() => handleBulk(true)}
+            disabled={bulkUpdate.isPending || models.length === 0}
+            title="Disable all models"
+          >
+            <ToggleLeft className="w-3 h-3" />
+            Disable all
+          </Button>
           <Button
             size="sm"
             variant="outline"

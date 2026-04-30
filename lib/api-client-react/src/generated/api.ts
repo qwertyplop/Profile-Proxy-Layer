@@ -20,6 +20,8 @@ import type {
   AddKeyBody,
   AddModelBody,
   ApiKey,
+  BulkUpdateModelsBody,
+  BulkUpdateProfileModels200,
   CreateAccessKeyBody,
   CreateProfileBody,
   ErrorResponse,
@@ -1140,6 +1142,97 @@ export const useAddProfileModel = <
   TContext
 > => {
   return useMutation(getAddProfileModelMutationOptions(options));
+};
+
+/**
+ * @summary Bulk enable or disable all models for a profile
+ */
+export const getBulkUpdateProfileModelsUrl = (id: number) => {
+  return `/api/profiles/${id}/models/bulk`;
+};
+
+export const bulkUpdateProfileModels = async (
+  id: number,
+  bulkUpdateModelsBody: BulkUpdateModelsBody,
+  options?: RequestInit,
+): Promise<BulkUpdateProfileModels200> => {
+  return customFetch<BulkUpdateProfileModels200>(
+    getBulkUpdateProfileModelsUrl(id),
+    {
+      ...options,
+      method: "PATCH",
+      headers: { "Content-Type": "application/json", ...options?.headers },
+      body: JSON.stringify(bulkUpdateModelsBody),
+    },
+  );
+};
+
+export const getBulkUpdateProfileModelsMutationOptions = <
+  TError = ErrorType<ErrorResponse>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof bulkUpdateProfileModels>>,
+    TError,
+    { id: number; data: BodyType<BulkUpdateModelsBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof bulkUpdateProfileModels>>,
+  TError,
+  { id: number; data: BodyType<BulkUpdateModelsBody> },
+  TContext
+> => {
+  const mutationKey = ["bulkUpdateProfileModels"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof bulkUpdateProfileModels>>,
+    { id: number; data: BodyType<BulkUpdateModelsBody> }
+  > = (props) => {
+    const { id, data } = props ?? {};
+
+    return bulkUpdateProfileModels(id, data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type BulkUpdateProfileModelsMutationResult = NonNullable<
+  Awaited<ReturnType<typeof bulkUpdateProfileModels>>
+>;
+export type BulkUpdateProfileModelsMutationBody =
+  BodyType<BulkUpdateModelsBody>;
+export type BulkUpdateProfileModelsMutationError = ErrorType<ErrorResponse>;
+
+/**
+ * @summary Bulk enable or disable all models for a profile
+ */
+export const useBulkUpdateProfileModels = <
+  TError = ErrorType<ErrorResponse>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof bulkUpdateProfileModels>>,
+    TError,
+    { id: number; data: BodyType<BulkUpdateModelsBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof bulkUpdateProfileModels>>,
+  TError,
+  { id: number; data: BodyType<BulkUpdateModelsBody> },
+  TContext
+> => {
+  return useMutation(getBulkUpdateProfileModelsMutationOptions(options));
 };
 
 /**

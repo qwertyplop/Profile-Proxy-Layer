@@ -6,6 +6,8 @@ import {
   ListProfileModelsParams,
   AddProfileModelParams,
   AddProfileModelBody,
+  BulkUpdateProfileModelsParams,
+  BulkUpdateProfileModelsBody,
   UpdateProfileModelParams,
   UpdateProfileModelBody,
   DeleteProfileModelParams,
@@ -87,6 +89,37 @@ router.post("/profiles/:id/models", async (req, res): Promise<void> => {
     }
     throw err;
   }
+});
+
+router.patch("/profiles/:id/models/bulk", async (req, res): Promise<void> => {
+  const params = BulkUpdateProfileModelsParams.safeParse(req.params);
+  if (!params.success) {
+    res.status(400).json({ error: params.error.message });
+    return;
+  }
+  const body = BulkUpdateProfileModelsBody.safeParse(req.body);
+  if (!body.success) {
+    res.status(400).json({ error: body.error.message });
+    return;
+  }
+
+  const profile = await db
+    .select()
+    .from(profilesTable)
+    .where(eq(profilesTable.id, params.data.id))
+    .then((r) => r[0] ?? null);
+  if (!profile) {
+    res.status(404).json({ error: "Profile not found" });
+    return;
+  }
+
+  const updated = await db
+    .update(modelsTable)
+    .set({ disabled: body.data.disabled })
+    .where(eq(modelsTable.profileId, params.data.id))
+    .returning();
+
+  res.json({ updated: updated.length });
 });
 
 router.patch("/profiles/:id/models/:modelId", async (req, res): Promise<void> => {

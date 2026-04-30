@@ -105,6 +105,10 @@ export interface UpdateModelBody {
   disabled?: boolean;
 }
 
+export interface BulkUpdateModelsBody {
+  disabled: boolean;
+}
+
 export interface RefreshModelsResponse {
   added: number;
   removed: number;
@@ -120,3 +124,7 @@ export interface CreateAccessKeyBody {
 export interface ErrorResponse {
   error: string;
 }
+
+export type BulkUpdateProfileModels200 = {
+  updated: number;
+};
