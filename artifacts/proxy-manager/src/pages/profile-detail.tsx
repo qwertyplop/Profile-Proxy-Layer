@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useRoute, Link } from "wouter";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -109,6 +109,7 @@ const addModelSchema = z.object({
 export default function ProfileDetail() {
   const [, params] = useRoute("/profiles/:id");
   const id = params?.id ? parseInt(params.id, 10) : 0;
+  const scrollRef = useRef<HTMLDivElement>(null);
 
   const { data: profile, isLoading, isError } = useGetProfile(id, {
     query: { enabled: !!id, queryKey: getGetProfileQueryKey(id), retry: false },
@@ -163,7 +164,7 @@ export default function ProfileDetail() {
         </div>
       </div>
 
-      <div className="flex-1 overflow-auto p-6">
+      <div ref={scrollRef} className="flex-1 overflow-auto p-6">
         <div className="max-w-6xl mx-auto space-y-8">
           <div className="grid gap-6 md:grid-cols-2">
             <div className="space-y-6">
@@ -230,7 +231,7 @@ export default function ProfileDetail() {
             </div>
           </div>
 
-          <ModelsSection profileId={id} profileName={profile.name} />
+          <ModelsSection profileId={id} profileName={profile.name} scrollRef={scrollRef} />
         </div>
       </div>
     </div>
@@ -594,7 +595,7 @@ function AddKeyDialog({ id }: { id: number }) {
   );
 }
 
-function ModelsSection({ profileId, profileName }: { profileId: number; profileName: string }) {
+function ModelsSection({ profileId, profileName, scrollRef }: { profileId: number; profileName: string; scrollRef: React.RefObject<HTMLDivElement> }) {
   const { data: models = [], isLoading } = useListProfileModels(profileId, {
     query: { queryKey: getListProfileModelsQueryKey(profileId) },
   });
@@ -653,10 +654,16 @@ function ModelsSection({ profileId, profileName }: { profileId: number; profileN
 
   const handleToggle = (modelId: number, disabled: boolean) => {
     const prevData = queryClient.getQueryData(getListProfileModelsQueryKey(profileId));
+    const savedScroll = scrollRef.current?.scrollTop ?? 0;
+
     queryClient.setQueryData(
       getListProfileModelsQueryKey(profileId),
       (old: typeof models) => old?.map((m) => (m.id === modelId ? { ...m, disabled } : m)) ?? old,
     );
+
+    requestAnimationFrame(() => {
+      if (scrollRef.current) scrollRef.current.scrollTop = savedScroll;
+    });
 
     updateModel.mutate(
       { id: profileId, modelId, data: { disabled } },
