@@ -604,6 +604,7 @@ function ModelsSection({ profileId, profileName, scrollRef }: { profileId: numbe
   const refresh = useRefreshProfileModels();
   const updateModel = useUpdateProfileModel();
   const deleteModel = useDeleteProfileModel();
+  const modelsScrollRef = useRef<HTMLDivElement>(null);
 
   const [addOpen, setAddOpen] = useState(false);
   const [filter, setFilter] = useState("");
@@ -654,7 +655,7 @@ function ModelsSection({ profileId, profileName, scrollRef }: { profileId: numbe
 
   const handleToggle = (modelId: number, disabled: boolean) => {
     const prevData = queryClient.getQueryData(getListProfileModelsQueryKey(profileId));
-    const savedScroll = scrollRef.current?.scrollTop ?? 0;
+    const savedScroll = modelsScrollRef.current?.scrollTop ?? 0;
 
     queryClient.setQueryData(
       getListProfileModelsQueryKey(profileId),
@@ -662,7 +663,7 @@ function ModelsSection({ profileId, profileName, scrollRef }: { profileId: numbe
     );
 
     requestAnimationFrame(() => {
-      if (scrollRef.current) scrollRef.current.scrollTop = savedScroll;
+      if (modelsScrollRef.current) modelsScrollRef.current.scrollTop = savedScroll;
     });
 
     updateModel.mutate(
@@ -702,8 +703,8 @@ function ModelsSection({ profileId, profileName, scrollRef }: { profileId: numbe
   const enabledCount = models.filter((m) => !m.disabled).length;
 
   return (
-    <section className="bg-card border border-border rounded-lg flex flex-col">
-      <div className="p-4 border-b border-border flex items-center justify-between gap-3 flex-wrap">
+    <section className="bg-card border border-border rounded-lg flex flex-col h-[520px]">
+      <div className="p-4 border-b border-border flex items-center justify-between gap-3 flex-wrap shrink-0">
         <div className="flex items-center gap-2">
           <Boxes className="w-5 h-5 text-primary" />
           <h2 className="text-lg font-bold">Models</h2>
@@ -754,7 +755,7 @@ function ModelsSection({ profileId, profileName, scrollRef }: { profileId: numbe
         </div>
       </div>
 
-      <div className="p-4">
+      <div ref={modelsScrollRef} className="p-4 flex-1 overflow-auto">
         <p className="text-xs text-muted-foreground mb-3">
           Models listed here are exposed via <span className="font-mono text-primary">/v1/models</span> as
           <span className="font-mono text-primary"> {profileName} - &lt;name&gt;</span>. Disabled ones are hidden from clients. If the provider doesn't expose <span className="font-mono">/models</span>, add entries by hand.
