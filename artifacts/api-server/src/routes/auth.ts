@@ -42,6 +42,7 @@ async function userCount(): Promise<number> {
 }
 
 router.get("/auth/status", async (req, res): Promise<void> => {
+  res.setHeader("Cache-Control", "no-store");
   let count = 0;
   try {
     count = await withSchemaRetry(() => userCount());
