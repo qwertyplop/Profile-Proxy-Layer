@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useRoute, Link } from "wouter";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -591,6 +591,47 @@ function AddKeyDialog({ id }: { id: number }) {
   );
 }
 
+function MarqueeText({ text, className }: { text: string; className?: string }) {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const textRef = useRef<HTMLSpanElement>(null);
+  const [scrollDist, setScrollDist] = useState(0);
+
+  useEffect(() => {
+    const check = () => {
+      const c = containerRef.current;
+      const t = textRef.current;
+      if (!c || !t) return;
+      const dist = t.scrollWidth - c.clientWidth;
+      setScrollDist(dist > 2 ? dist : 0);
+    };
+    check();
+    const ro = new ResizeObserver(check);
+    if (containerRef.current) ro.observe(containerRef.current);
+    return () => ro.disconnect();
+  }, [text]);
+
+  const duration = scrollDist > 0 ? Math.max(3, scrollDist / 35) : 0;
+
+  return (
+    <div ref={containerRef} className={`overflow-hidden ${className ?? ""}`}>
+      <span
+        ref={textRef}
+        className="inline-block whitespace-nowrap"
+        style={
+          scrollDist > 0
+            ? ({
+                animation: `marquee-ping-pong ${duration}s ease-in-out infinite`,
+                "--marquee-offset": `-${scrollDist}px`,
+              } as React.CSSProperties)
+            : undefined
+        }
+      >
+        {text}
+      </span>
+    </div>
+  );
+}
+
 function ModelsSection({ profileId, profileName, scrollRef }: { profileId: number; profileName: string; scrollRef: React.RefObject<HTMLDivElement> }) {
   const { data: models = [], isLoading } = useListProfileModels(profileId, {
     query: { queryKey: getListProfileModelsQueryKey(profileId) },
@@ -778,7 +819,7 @@ function ModelsSection({ profileId, profileName, scrollRef }: { profileId: numbe
                 }`}
               >
                 <div className="min-w-0 flex-1 overflow-hidden">
-                  <div className="truncate">{m.modelName}</div>
+                  <MarqueeText text={m.modelName} />
                   <div className="flex items-center gap-1.5 mt-0.5 min-w-0">
                     <Badge
                       variant="outline"

@@ -111,6 +111,12 @@
   --radius: 0.25rem;
 }
 
+@keyframes marquee-ping-pong {
+  0%, 20%   { transform: translateX(0); }
+  45%, 55%  { transform: translateX(var(--marquee-offset)); }
+  80%, 100% { transform: translateX(0); }
+}
+
 @layer base {
   * {
     @apply border-border;
