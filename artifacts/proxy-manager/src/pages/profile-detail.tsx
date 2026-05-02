@@ -136,39 +136,35 @@ export default function ProfileDetail() {
 
   return (
     <div className="flex-1 flex flex-col h-full overflow-hidden">
-      <div className="h-14 border-b border-border flex items-center justify-between px-6 bg-card/50 shrink-0">
-        <div className="flex items-center gap-4">
+      <div className="border-b border-border flex items-center justify-between px-4 md:px-6 bg-card/50 shrink-0 flex-wrap gap-x-4 gap-y-2 py-3">
+        <div className="flex items-center gap-2 md:gap-4 min-w-0">
           <Link href="/">
-            <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-foreground">
+            <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-foreground shrink-0">
               <ArrowLeft className="w-4 h-4" />
             </Button>
           </Link>
-          <div className="h-4 w-px bg-border"></div>
-          <h1 className="font-bold text-foreground flex items-center gap-2">
-            {profile.name}
-            <Badge variant="outline" className="font-mono text-xs text-muted-foreground ml-2">
-              ID: {profile.id}
+          <div className="h-4 w-px bg-border shrink-0"></div>
+          <h1 className="font-bold text-foreground flex items-center gap-1.5 flex-wrap min-w-0">
+            <span className="truncate max-w-[120px] sm:max-w-none">{profile.name}</span>
+            <Badge variant="outline" className="font-mono text-xs text-muted-foreground shrink-0">
+              #{profile.id}
             </Badge>
-            <Badge
-              variant="secondary"
-              className="font-mono text-xs ml-1"
-              title="Key rotation mode"
-            >
+            <Badge variant="secondary" className="font-mono text-xs shrink-0" title="Key rotation mode">
               {profile.rotationMode}
             </Badge>
           </h1>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 shrink-0">
           <RotateKeyButton id={id} />
           <DeleteProfileButton id={id} />
         </div>
       </div>
 
-      <div ref={scrollRef} className="flex-1 overflow-auto p-6">
-        <div className="max-w-6xl mx-auto space-y-8">
+      <div ref={scrollRef} className="flex-1 overflow-auto p-3 md:p-6">
+        <div className="max-w-6xl mx-auto space-y-4 md:space-y-8">
           <div className="grid gap-6 md:grid-cols-2">
             <div className="space-y-6">
-              <section className="bg-card border border-border rounded-lg p-6">
+              <section className="bg-card border border-border rounded-lg p-4 md:p-6">
                 <div className="flex items-center gap-2 mb-4 text-foreground">
                   <Settings className="w-5 h-5 text-primary" />
                   <h2 className="text-lg font-bold">Configuration</h2>
@@ -199,7 +195,7 @@ export default function ProfileDetail() {
             </div>
 
             <div className="space-y-6">
-              <section className="bg-card border border-border rounded-lg flex flex-col max-h-[600px]">
+              <section className="bg-card border border-border rounded-lg flex flex-col max-h-[320px] md:max-h-[600px]">
                 <div className="p-4 border-b border-border flex items-center justify-between shrink-0">
                   <div className="flex items-center gap-2">
                     <KeyRound className="w-5 h-5 text-primary" />
@@ -703,53 +699,54 @@ function ModelsSection({ profileId, profileName, scrollRef }: { profileId: numbe
   const enabledCount = models.filter((m) => !m.disabled).length;
 
   return (
-    <section className="bg-card border border-border rounded-lg flex flex-col h-[520px]">
-      <div className="p-4 border-b border-border flex items-center justify-between gap-3 flex-wrap shrink-0">
-        <div className="flex items-center gap-2">
-          <Boxes className="w-5 h-5 text-primary" />
-          <h2 className="text-lg font-bold">Models</h2>
-          <Badge variant="secondary" className="ml-2">
-            {enabledCount} / {models.length} enabled
+    <section className="bg-card border border-border rounded-lg flex flex-col h-[420px] md:h-[520px]">
+      <div className="px-4 py-3 border-b border-border flex items-center justify-between gap-2 flex-wrap shrink-0">
+        <div className="flex items-center gap-2 shrink-0">
+          <Boxes className="w-4 h-4 text-primary" />
+          <h2 className="font-bold">Models</h2>
+          <Badge variant="secondary" className="ml-1 text-xs">
+            {enabledCount}/{models.length}
           </Badge>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1.5 flex-wrap flex-1 justify-end">
           <Input
             placeholder="Filter…"
             value={filter}
             onChange={(e) => setFilter(e.target.value)}
-            className="h-8 w-44 font-mono text-xs bg-background"
+            className="h-8 w-28 sm:w-44 font-mono text-xs bg-background"
           />
           <Button
             size="sm"
             variant="outline"
-            className="gap-1 h-8 text-xs"
+            className="h-8 px-2 text-xs gap-1"
             onClick={() => handleBulk(false)}
             disabled={bulkUpdate.isPending || models.length === 0}
             title="Enable all models"
           >
-            <ToggleRight className="w-3 h-3" />
-            Enable all
+            <ToggleRight className="w-3.5 h-3.5 shrink-0" />
+            <span className="hidden sm:inline">Enable all</span>
           </Button>
           <Button
             size="sm"
             variant="outline"
-            className="gap-1 h-8 text-xs"
+            className="h-8 px-2 text-xs gap-1"
             onClick={() => handleBulk(true)}
             disabled={bulkUpdate.isPending || models.length === 0}
             title="Disable all models"
           >
-            <ToggleLeft className="w-3 h-3" />
-            Disable all
+            <ToggleLeft className="w-3.5 h-3.5 shrink-0" />
+            <span className="hidden sm:inline">Disable all</span>
           </Button>
           <Button
             size="sm"
             variant="outline"
-            className="gap-1 h-8 text-xs"
+            className="h-8 px-2 text-xs gap-1"
             onClick={handleRefresh}
             disabled={refresh.isPending}
+            title="Fetch models from upstream"
           >
-            <Download className={`w-3 h-3 ${refresh.isPending ? "animate-pulse" : ""}`} />
-            {refresh.isPending ? "Fetching…" : "Fetch from upstream"}
+            <Download className={`w-3.5 h-3.5 shrink-0 ${refresh.isPending ? "animate-pulse" : ""}`} />
+            <span className="hidden sm:inline">{refresh.isPending ? "Fetching…" : "Fetch upstream"}</span>
           </Button>
           <AddModelDialog id={profileId} open={addOpen} onOpenChange={setAddOpen} onAdded={invalidate} />
         </div>
