@@ -752,7 +752,7 @@ function ModelsSection({ profileId, profileName, scrollRef }: { profileId: numbe
         </div>
       </div>
 
-      <div ref={modelsScrollRef} className="p-4 flex-1 overflow-auto">
+      <div ref={modelsScrollRef} className="p-4 flex-1 overflow-y-auto overflow-x-hidden">
         <p className="text-xs text-muted-foreground mb-3">
           Models listed here are exposed via <span className="font-mono text-primary">/v1/models</span> as
           <span className="font-mono text-primary"> {profileName} - &lt;name&gt;</span>. Disabled ones are hidden from clients. If the provider doesn't expose <span className="font-mono">/models</span>, add entries by hand.
@@ -771,24 +771,24 @@ function ModelsSection({ profileId, profileName, scrollRef }: { profileId: numbe
             {filtered.map((m) => (
               <div
                 key={m.id}
-                className={`flex items-center justify-between gap-2 px-3 py-2 rounded border font-mono text-sm ${
+                className={`flex items-center justify-between gap-2 px-3 py-2 rounded border font-mono text-sm min-w-0 ${
                   m.disabled
                     ? "bg-secondary/10 border-border/50 text-muted-foreground"
                     : "bg-secondary/30 border-border text-foreground"
                 }`}
               >
-                <div className="min-w-0 flex-1">
+                <div className="min-w-0 flex-1 overflow-hidden">
                   <div className="truncate">{m.modelName}</div>
-                  <div className="flex items-center gap-2 mt-0.5">
+                  <div className="flex items-center gap-1.5 mt-0.5 min-w-0">
                     <Badge
                       variant="outline"
-                      className="text-[10px] py-0 px-1.5 h-4 capitalize"
+                      className="text-[10px] py-0 px-1.5 h-4 capitalize shrink-0"
                     >
                       {m.source}
                     </Badge>
                     {m.disabled && (
-                      <span className="text-[10px] uppercase tracking-wider text-muted-foreground">
-                        hidden from /v1/models
+                      <span className="text-[10px] uppercase tracking-wider text-muted-foreground truncate">
+                        hidden
                       </span>
                     )}
                   </div>
