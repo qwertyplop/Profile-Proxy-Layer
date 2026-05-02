@@ -163,8 +163,8 @@ export default function ProfileDetail() {
       <div ref={scrollRef} className="flex-1 overflow-auto p-3 md:p-6">
         <div className="max-w-6xl mx-auto space-y-4 md:space-y-8">
           <div className="grid gap-6 md:grid-cols-2">
-            <div className="space-y-6">
-              <section className="bg-card border border-border rounded-lg p-4 md:p-6">
+            <div className="space-y-6 min-w-0">
+              <section className="bg-card border border-border rounded-lg p-4 md:p-6 overflow-hidden">
                 <div className="flex items-center gap-2 mb-4 text-foreground">
                   <Settings className="w-5 h-5 text-primary" />
                   <h2 className="text-lg font-bold">Configuration</h2>
@@ -172,30 +172,30 @@ export default function ProfileDetail() {
                 <UpdateProfileForm profile={profile} />
               </section>
 
-              <section className="bg-card border border-border rounded-lg p-6">
+              <section className="bg-card border border-border rounded-lg p-4 md:p-6 overflow-hidden">
                 <h2 className="text-sm font-bold uppercase tracking-wider text-muted-foreground mb-4">SillyTavern Setup</h2>
                 <p className="text-sm text-muted-foreground mb-3">
                   Point SillyTavern (or any OpenAI-compatible client) to the unified endpoint below. Models from all profiles are listed as <span className="font-mono text-primary">ProfileName - ModelName</span> — select one and requests are routed here automatically.
                 </p>
-                <div className="bg-secondary/50 border border-border rounded p-3 font-mono text-sm mb-3">
-                  <div className="flex items-center justify-between gap-2">
+                <div className="bg-secondary/50 border border-border rounded p-3 font-mono text-sm mb-3 overflow-hidden">
+                  <div className="flex items-center justify-between gap-2 min-w-0">
                     <span className="text-xs text-muted-foreground shrink-0">API URL</span>
-                    <span className="text-primary truncate mx-2">{window.location.origin}/v1</span>
+                    <span className="text-primary truncate min-w-0 flex-1 mx-2">{window.location.origin}/v1</span>
                     <CopyButton text={`${window.location.origin}/v1`} />
                   </div>
                 </div>
-                <div className="bg-secondary/50 border border-border rounded p-3 font-mono text-sm">
-                  <div className="flex items-center justify-between gap-2">
+                <div className="bg-secondary/50 border border-border rounded p-3 font-mono text-sm overflow-hidden">
+                  <div className="flex items-center justify-between gap-2 min-w-0">
                     <span className="text-xs text-muted-foreground shrink-0">Model prefix</span>
-                    <span className="text-primary truncate mx-2">{profile.name} - &lt;model&gt;</span>
+                    <span className="text-primary truncate min-w-0 flex-1 mx-2">{profile.name} - &lt;model&gt;</span>
                     <CopyButton text={`${profile.name} - `} />
                   </div>
                 </div>
               </section>
             </div>
 
-            <div className="space-y-6">
-              <section className="bg-card border border-border rounded-lg flex flex-col max-h-[320px] md:max-h-[600px]">
+            <div className="space-y-6 min-w-0">
+              <section className="bg-card border border-border rounded-lg flex flex-col max-h-[320px] md:max-h-[600px] overflow-hidden">
                 <div className="p-4 border-b border-border flex items-center justify-between shrink-0">
                   <div className="flex items-center gap-2">
                     <KeyRound className="w-5 h-5 text-primary" />
