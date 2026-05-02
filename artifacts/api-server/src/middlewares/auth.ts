@@ -15,9 +15,21 @@ declare global {
 
 export const SESSION_COOKIE = "session_id";
 
-async function loadSession(req: Request): Promise<{ userId: number; username: string } | null> {
+function extractSid(req: Request): string | null {
+  // Prefer Authorization header (works in cross-site iframe contexts where cookies are blocked)
+  const authHeader = req.headers["authorization"];
+  if (authHeader?.startsWith("Bearer ")) {
+    const token = authHeader.slice(7).trim();
+    // Only treat as a session token if it looks like one (64 hex chars), not a layer access key
+    if (/^[0-9a-f]{64}$/.test(token)) return token;
+  }
+  // Fall back to cookie
   const cookies = req.cookies as Record<string, string> | undefined;
-  const sid = cookies?.[SESSION_COOKIE];
+  return cookies?.[SESSION_COOKIE] ?? null;
+}
+
+async function loadSession(req: Request): Promise<{ userId: number; username: string } | null> {
+  const sid = extractSid(req);
   if (!sid) return null;
 
   const [row] = await db

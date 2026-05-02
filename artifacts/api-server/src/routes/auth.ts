@@ -95,7 +95,7 @@ router.post("/auth/register", async (req, res): Promise<void> => {
     }
 
     setSessionCookie(res, result.sid, result.expiresAt);
-    res.json({ username: result.user.username });
+    res.json({ username: result.user.username, token: result.sid });
   } catch (err) {
     req.log?.error({ err }, "Register failed");
     res.status(500).json({ error: "Failed to create account. Please try again." });
@@ -136,7 +136,7 @@ router.post("/auth/login", async (req, res): Promise<void> => {
     }
 
     setSessionCookie(res, result.sid, result.expiresAt);
-    res.json({ username: result.user.username });
+    res.json({ username: result.user.username, token: result.sid });
   } catch (err) {
     req.log?.error({ err }, "Login failed");
     res.status(500).json({ error: "Login failed. Please try again." });

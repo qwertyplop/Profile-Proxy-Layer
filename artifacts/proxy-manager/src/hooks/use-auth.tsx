@@ -1,5 +1,5 @@
 import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from "react";
-import { apiFetch } from "@/lib/api";
+import { apiFetch, setStoredToken, clearStoredToken } from "@/lib/api";
 
 type AuthStatus = {
   registrationOpen: boolean;
@@ -35,23 +35,26 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [refresh]);
 
   const login = useCallback(async (username: string, password: string) => {
-    await apiFetch("/api/auth/login", {
+    const data = await apiFetch<{ username: string; token: string }>("/api/auth/login", {
       method: "POST",
       body: JSON.stringify({ username, password }),
     });
+    setStoredToken(data.token);
     await refresh();
   }, [refresh]);
 
   const register = useCallback(async (username: string, password: string) => {
-    await apiFetch("/api/auth/register", {
+    const data = await apiFetch<{ username: string; token: string }>("/api/auth/register", {
       method: "POST",
       body: JSON.stringify({ username, password }),
     });
+    setStoredToken(data.token);
     await refresh();
   }, [refresh]);
 
   const logout = useCallback(async () => {
     await apiFetch("/api/auth/logout", { method: "POST" });
+    clearStoredToken();
     await refresh();
   }, [refresh]);
 

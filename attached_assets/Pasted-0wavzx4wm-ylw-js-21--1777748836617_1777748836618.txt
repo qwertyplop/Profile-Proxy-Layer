@@ -1,0 +1,234 @@
+0wavzx4wm.ylw.js:21 
+      /////////////////////
+   ///////////////////////////
+  ////////@@@@@@@//////////////
+  ////////@@@@@@@//////////////
+  ////////@@@@@@@//////////////        Curious and driven?
+  ///////////////@@@@@@@///////        Work with us!
+  ///////////////@@@@@@@///////
+  ///////////////@@@@@@@///////        https://join.replit.com/hack.with.us
+  ////////@@@@@@@//////////////
+  ////////@@@@@@@//////////////
+  ////////@@@@@@#//////////////
+   ///////////////////////////
+      /////////////////////
+      
+0wavzx4wm.ylw.js:21 Download the Apollo DevTools for a better development experience: https://chrome.google.com/webstore/detail/apollo-client-developer-t/jdkknkkbebbapilgoeccciglkfbmbnfm
+0wavzx4wm.ylw.js:21 [LaunchDarkly] LaunchDarkly client initialized
+/public/manifest.json:1  Failed to load resource: the server responded with a status of 403 ()
+Remixable-proxy:1 Manifest fetch from https://replit.com/public/manifest.json failed, code 403
+chrome-extension://invalid/:1  Failed to load resource: net::ERR_FAILED
+chrome-extension://invalid/:1  Failed to load resource: net::ERR_FAILED
+chrome-extension://invalid/:1  Failed to load resource: net::ERR_FAILED
+chrome-extension://invalid/:1  Failed to load resource: net::ERR_FAILED
+chrome-extension://invalid/:1  Failed to load resource: net::ERR_FAILED
+chrome-extension://invalid/:1  Failed to load resource: net::ERR_FAILED
+chrome-extension://invalid/:1  Failed to load resource: net::ERR_FAILED
+chrome-extension://invalid/:1  Failed to load resource: net::ERR_FAILED
+chrome-extension://invalid/:1  Failed to load resource: net::ERR_FAILED
+0i8wy8tbht2ow.js:2 Error while parsing the 'sandbox' attribute: 'allow-downloads-without-user-activation' is an invalid sandbox flag.
+C @ 0i8wy8tbht2ow.js:2
+(anonymous) @ 0i8wy8tbht2ow.js:2
+oO @ 0i8wy8tbht2ow.js:2
+oD @ 0i8wy8tbht2ow.js:2
+oR @ 0i8wy8tbht2ow.js:2
+oS @ 0i8wy8tbht2ow.js:2
+E @ 0i8wy8tbht2ow.js:2
+L @ 0i8wy8tbht2ow.js:2
+0i8wy8tbht2ow.js:2 Unrecognized feature: 'ambient-light-sensor'.
+C @ 0i8wy8tbht2ow.js:2
+(anonymous) @ 0i8wy8tbht2ow.js:2
+oO @ 0i8wy8tbht2ow.js:2
+oD @ 0i8wy8tbht2ow.js:2
+oR @ 0i8wy8tbht2ow.js:2
+oS @ 0i8wy8tbht2ow.js:2
+E @ 0i8wy8tbht2ow.js:2
+L @ 0i8wy8tbht2ow.js:2
+0i8wy8tbht2ow.js:2 Unrecognized feature: 'battery'.
+C @ 0i8wy8tbht2ow.js:2
+(anonymous) @ 0i8wy8tbht2ow.js:2
+oO @ 0i8wy8tbht2ow.js:2
+oD @ 0i8wy8tbht2ow.js:2
+oR @ 0i8wy8tbht2ow.js:2
+oS @ 0i8wy8tbht2ow.js:2
+E @ 0i8wy8tbht2ow.js:2
+L @ 0i8wy8tbht2ow.js:2
+0i8wy8tbht2ow.js:2 Unrecognized feature: 'execution-while-not-rendered'.
+C @ 0i8wy8tbht2ow.js:2
+(anonymous) @ 0i8wy8tbht2ow.js:2
+oO @ 0i8wy8tbht2ow.js:2
+oD @ 0i8wy8tbht2ow.js:2
+oR @ 0i8wy8tbht2ow.js:2
+oS @ 0i8wy8tbht2ow.js:2
+E @ 0i8wy8tbht2ow.js:2
+L @ 0i8wy8tbht2ow.js:2
+0i8wy8tbht2ow.js:2 Unrecognized feature: 'execution-while-out-of-viewport'.
+C @ 0i8wy8tbht2ow.js:2
+(anonymous) @ 0i8wy8tbht2ow.js:2
+oO @ 0i8wy8tbht2ow.js:2
+oD @ 0i8wy8tbht2ow.js:2
+oR @ 0i8wy8tbht2ow.js:2
+oS @ 0i8wy8tbht2ow.js:2
+E @ 0i8wy8tbht2ow.js:2
+L @ 0i8wy8tbht2ow.js:2
+0i8wy8tbht2ow.js:2 Unrecognized feature: 'layout-animations'.
+C @ 0i8wy8tbht2ow.js:2
+(anonymous) @ 0i8wy8tbht2ow.js:2
+oO @ 0i8wy8tbht2ow.js:2
+oD @ 0i8wy8tbht2ow.js:2
+oR @ 0i8wy8tbht2ow.js:2
+oS @ 0i8wy8tbht2ow.js:2
+E @ 0i8wy8tbht2ow.js:2
+L @ 0i8wy8tbht2ow.js:2
+0i8wy8tbht2ow.js:2 Unrecognized feature: 'legacy-image-formats'.
+C @ 0i8wy8tbht2ow.js:2
+(anonymous) @ 0i8wy8tbht2ow.js:2
+oO @ 0i8wy8tbht2ow.js:2
+oD @ 0i8wy8tbht2ow.js:2
+oR @ 0i8wy8tbht2ow.js:2
+oS @ 0i8wy8tbht2ow.js:2
+E @ 0i8wy8tbht2ow.js:2
+L @ 0i8wy8tbht2ow.js:2
+0i8wy8tbht2ow.js:2 Unrecognized feature: 'navigation-override'.
+C @ 0i8wy8tbht2ow.js:2
+(anonymous) @ 0i8wy8tbht2ow.js:2
+oO @ 0i8wy8tbht2ow.js:2
+oD @ 0i8wy8tbht2ow.js:2
+oR @ 0i8wy8tbht2ow.js:2
+oS @ 0i8wy8tbht2ow.js:2
+E @ 0i8wy8tbht2ow.js:2
+L @ 0i8wy8tbht2ow.js:2
+0i8wy8tbht2ow.js:2 Unrecognized feature: 'oversized-images'.
+C @ 0i8wy8tbht2ow.js:2
+(anonymous) @ 0i8wy8tbht2ow.js:2
+oO @ 0i8wy8tbht2ow.js:2
+oD @ 0i8wy8tbht2ow.js:2
+oR @ 0i8wy8tbht2ow.js:2
+oS @ 0i8wy8tbht2ow.js:2
+E @ 0i8wy8tbht2ow.js:2
+L @ 0i8wy8tbht2ow.js:2
+0i8wy8tbht2ow.js:2 Unrecognized feature: 'publickey-credentials'.
+C @ 0i8wy8tbht2ow.js:2
+(anonymous) @ 0i8wy8tbht2ow.js:2
+oO @ 0i8wy8tbht2ow.js:2
+oD @ 0i8wy8tbht2ow.js:2
+oR @ 0i8wy8tbht2ow.js:2
+oS @ 0i8wy8tbht2ow.js:2
+E @ 0i8wy8tbht2ow.js:2
+L @ 0i8wy8tbht2ow.js:2
+0i8wy8tbht2ow.js:2 Unrecognized feature: 'speaker-selection'.
+C @ 0i8wy8tbht2ow.js:2
+(anonymous) @ 0i8wy8tbht2ow.js:2
+oO @ 0i8wy8tbht2ow.js:2
+oD @ 0i8wy8tbht2ow.js:2
+oR @ 0i8wy8tbht2ow.js:2
+oS @ 0i8wy8tbht2ow.js:2
+E @ 0i8wy8tbht2ow.js:2
+L @ 0i8wy8tbht2ow.js:2
+0i8wy8tbht2ow.js:2 Unrecognized feature: 'unoptimized-images'.
+C @ 0i8wy8tbht2ow.js:2
+(anonymous) @ 0i8wy8tbht2ow.js:2
+oO @ 0i8wy8tbht2ow.js:2
+oD @ 0i8wy8tbht2ow.js:2
+oR @ 0i8wy8tbht2ow.js:2
+oS @ 0i8wy8tbht2ow.js:2
+E @ 0i8wy8tbht2ow.js:2
+L @ 0i8wy8tbht2ow.js:2
+0i8wy8tbht2ow.js:2 Unrecognized feature: 'unsized-media'.
+C @ 0i8wy8tbht2ow.js:2
+(anonymous) @ 0i8wy8tbht2ow.js:2
+oO @ 0i8wy8tbht2ow.js:2
+oD @ 0i8wy8tbht2ow.js:2
+oR @ 0i8wy8tbht2ow.js:2
+oS @ 0i8wy8tbht2ow.js:2
+E @ 0i8wy8tbht2ow.js:2
+L @ 0i8wy8tbht2ow.js:2
+0i8wy8tbht2ow.js:2 Unrecognized feature: 'pointer-lock'.
+C @ 0i8wy8tbht2ow.js:2
+(anonymous) @ 0i8wy8tbht2ow.js:2
+oO @ 0i8wy8tbht2ow.js:2
+oD @ 0i8wy8tbht2ow.js:2
+oR @ 0i8wy8tbht2ow.js:2
+oS @ 0i8wy8tbht2ow.js:2
+E @ 0i8wy8tbht2ow.js:2
+L @ 0i8wy8tbht2ow.js:2
+0i8wy8tbht2ow.js:2 Allow attribute will take precedence over 'allowfullscreen'.
+C @ 0i8wy8tbht2ow.js:2
+(anonymous) @ 0i8wy8tbht2ow.js:2
+oO @ 0i8wy8tbht2ow.js:2
+oD @ 0i8wy8tbht2ow.js:2
+oR @ 0i8wy8tbht2ow.js:2
+oS @ 0i8wy8tbht2ow.js:2
+E @ 0i8wy8tbht2ow.js:2
+L @ 0i8wy8tbht2ow.js:2
+0i8wy8tbht2ow.js:2 Allow attribute will take precedence over 'allowpaymentrequest'.
+C @ 0i8wy8tbht2ow.js:2
+(anonymous) @ 0i8wy8tbht2ow.js:2
+oO @ 0i8wy8tbht2ow.js:2
+oD @ 0i8wy8tbht2ow.js:2
+oR @ 0i8wy8tbht2ow.js:2
+oS @ 0i8wy8tbht2ow.js:2
+E @ 0i8wy8tbht2ow.js:2
+L @ 0i8wy8tbht2ow.js:2
+0j210tspwt3vr.js:9 Failed to execute 'postMessage' on 'DOMWindow': The target origin provided ('https://169c72c7-4718-47c9-b3ea-28ee7e657d55-00-30bzgy4d0a8mg.sisko.replit.dev') does not match the recipient window's origin ('https://replit.com').
+w @ 0j210tspwt3vr.js:9
+e @ 13yey0lla-l85.js:382
+(anonymous) @ 13yey0lla-l85.js:382
+uI @ 0i8wy8tbht2ow.js:2
+oU @ 0i8wy8tbht2ow.js:2
+(anonymous) @ 0i8wy8tbht2ow.js:2
+oI @ 0i8wy8tbht2ow.js:2
+o_ @ 0i8wy8tbht2ow.js:2
+r8 @ 0i8wy8tbht2ow.js:2
+(anonymous) @ 0i8wy8tbht2ow.js:2
+oI @ 0i8wy8tbht2ow.js:2
+oS @ 0i8wy8tbht2ow.js:2
+E @ 0i8wy8tbht2ow.js:2
+L @ 0i8wy8tbht2ow.js:2
+content.js:66 Mouse up event, selected text: 
+content.js:66 Mouse up event, selected text: 
+content.js:66 Mouse up event, selected text: 
+content.js:66 Mouse up event, selected text: testuser
+content.js:66 Mouse up event, selected text: testpass123
+/public/manifest.json:1  Failed to load resource: the server responded with a status of 403 ()
+content.js:66 Mouse up event, selected text: 
+content.js:66 Mouse up event, selected text: 
+content.js:66 Mouse up event, selected text: 
+content.js:66 Mouse up event, selected text: 
+content.js:66 Mouse up event, selected text: 
+content.js:66 Mouse up event, selected text: 
+0i8wy8tbht2ow.js:2 Error while parsing the 'sandbox' attribute: 'allow-downloads-without-user-activation' is an invalid sandbox flag.
+C @ 0i8wy8tbht2ow.js:2
+0j210tspwt3vr.js:9 Failed to execute 'postMessage' on 'DOMWindow': The target origin provided ('https://169c72c7-4718-47c9-b3ea-28ee7e657d55-00-30bzgy4d0a8mg.sisko.replit.dev') does not match the recipient window's origin ('https://replit.com').
+w @ 0j210tspwt3vr.js:9
+content.js:66 Mouse up event, selected text: testuser
+content.js:66 Mouse up event, selected text: testpass123
+stallwart.build.js:1 stallwart: failed ping 1
+content.js:66 Mouse up event, selected text: 
+content.js:66 Mouse up event, selected text: 
+content.js:66 Mouse up event, selected text: 
+content.js:66 Mouse up event, selected text: 
+0i8wy8tbht2ow.js:2 Error while parsing the 'sandbox' attribute: 'allow-downloads-without-user-activation' is an invalid sandbox flag.
+C @ 0i8wy8tbht2ow.js:2
+0j210tspwt3vr.js:9 Failed to execute 'postMessage' on 'DOMWindow': The target origin provided ('https://169c72c7-4718-47c9-b3ea-28ee7e657d55-00-30bzgy4d0a8mg.sisko.replit.dev') does not match the recipient window's origin ('https://replit.com').
+w @ 0j210tspwt3vr.js:9
+workspace_iframe.html?initialPath=%2F&id=artifacts%2Fproxy-manager:32 Error while parsing the 'sandbox' attribute: 'allow-downloads-without-user-activation' is an invalid sandbox flag.
+workspace_iframe.html?initialPath=%2F&id=artifacts%2Fproxy-manager:32 Unrecognized feature: 'ambient-light-sensor'.
+workspace_iframe.html?initialPath=%2F&id=artifacts%2Fproxy-manager:32 Unrecognized feature: 'battery'.
+workspace_iframe.html?initialPath=%2F&id=artifacts%2Fproxy-manager:32 Unrecognized feature: 'execution-while-not-rendered'.
+workspace_iframe.html?initialPath=%2F&id=artifacts%2Fproxy-manager:32 Unrecognized feature: 'execution-while-out-of-viewport'.
+workspace_iframe.html?initialPath=%2F&id=artifacts%2Fproxy-manager:32 Unrecognized feature: 'layout-animations'.
+workspace_iframe.html?initialPath=%2F&id=artifacts%2Fproxy-manager:32 Unrecognized feature: 'legacy-image-formats'.
+workspace_iframe.html?initialPath=%2F&id=artifacts%2Fproxy-manager:32 Unrecognized feature: 'navigation-override'.
+workspace_iframe.html?initialPath=%2F&id=artifacts%2Fproxy-manager:32 Unrecognized feature: 'oversized-images'.
+workspace_iframe.html?initialPath=%2F&id=artifacts%2Fproxy-manager:32 Unrecognized feature: 'publickey-credentials'.
+workspace_iframe.html?initialPath=%2F&id=artifacts%2Fproxy-manager:32 Unrecognized feature: 'speaker-selection'.
+workspace_iframe.html?initialPath=%2F&id=artifacts%2Fproxy-manager:32 Unrecognized feature: 'unoptimized-images'.
+workspace_iframe.html?initialPath=%2F&id=artifacts%2Fproxy-manager:32 Unrecognized feature: 'unsized-media'.
+workspace_iframe.html?initialPath=%2F&id=artifacts%2Fproxy-manager:32 Allow attribute will take precedence over 'allowfullscreen'.
+workspace_iframe.html?initialPath=%2F&id=artifacts%2Fproxy-manager:32 Allow attribute will take precedence over 'allowpaymentrequest'.
+injected.js:37 [vite] connecting...
+injected.js:37 [vite] connected.
+beacon.js:1  Failed to load resource: net::ERR_BLOCKED_BY_RESPONSE.NotSameOrigin
+content.js:66 Mouse up event, selected text: testuser
+content.js:66 Mouse up event, selected text: testpass123
