@@ -652,13 +652,20 @@ function ModelsSection({ profileId, profileName }: { profileId: number; profileN
   };
 
   const handleToggle = (modelId: number, disabled: boolean) => {
+    const prevData = queryClient.getQueryData(getListProfileModelsQueryKey(profileId));
+    queryClient.setQueryData(
+      getListProfileModelsQueryKey(profileId),
+      (old: typeof models) => old?.map((m) => (m.id === modelId ? { ...m, disabled } : m)) ?? old,
+    );
+
     updateModel.mutate(
       { id: profileId, modelId, data: { disabled } },
       {
         onSuccess: () => {
-          invalidate();
+          queryClient.invalidateQueries({ queryKey: getListProfileModelsQueryKey(profileId) });
         },
         onError: (err) => {
+          queryClient.setQueryData(getListProfileModelsQueryKey(profileId), prevData);
           toast({ title: "Error updating model", description: err.data?.error || "Unknown error", variant: "destructive" });
         },
       },
@@ -680,9 +687,13 @@ function ModelsSection({ profileId, profileName }: { profileId: number; profileN
     );
   };
 
-  const filtered = filter
+  const filtered = (filter
     ? models.filter((m) => m.modelName.toLowerCase().includes(filter.toLowerCase()))
-    : models;
+    : models
+  ).slice().sort((a, b) => {
+    if (a.disabled !== b.disabled) return a.disabled ? 1 : -1;
+    return a.modelName.localeCompare(b.modelName);
+  });
 
   const enabledCount = models.filter((m) => !m.disabled).length;
 
