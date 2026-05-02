@@ -661,9 +661,6 @@ function ModelsSection({ profileId, profileName }: { profileId: number; profileN
     updateModel.mutate(
       { id: profileId, modelId, data: { disabled } },
       {
-        onSuccess: () => {
-          queryClient.invalidateQueries({ queryKey: getListProfileModelsQueryKey(profileId) });
-        },
         onError: (err) => {
           queryClient.setQueryData(getListProfileModelsQueryKey(profileId), prevData);
           toast({ title: "Error updating model", description: err.data?.error || "Unknown error", variant: "destructive" });
