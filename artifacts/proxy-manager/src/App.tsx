@@ -17,6 +17,7 @@ function Router() {
   return (
     <Switch>
       <Route path="/" component={Profiles} />
+      <Route path="/profiles" component={Profiles} />
       <Route path="/profiles/:id" component={ProfileDetail} />
       <Route path="/access-keys" component={AccessKeys} />
       <Route component={NotFound} />
