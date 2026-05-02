@@ -25,15 +25,15 @@ const SESSION_TTL_MS = 1000 * 60 * 60 * 24 * 30; // 30 days
 function setSessionCookie(res: import("express").Response, sid: string, expiresAt: Date) {
   res.cookie(SESSION_COOKIE, sid, {
     httpOnly: true,
-    sameSite: "strict",
-    secure: process.env["NODE_ENV"] === "production",
+    sameSite: "none",
+    secure: true,
     expires: expiresAt,
     path: "/",
   });
 }
 
 function clearSessionCookie(res: import("express").Response) {
-  res.clearCookie(SESSION_COOKIE, { path: "/" });
+  res.clearCookie(SESSION_COOKIE, { path: "/", sameSite: "none", secure: true });
 }
 
 async function userCount(): Promise<number> {
