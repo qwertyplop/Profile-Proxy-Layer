@@ -595,6 +595,7 @@ function MarqueeText({ text, className }: { text: string; className?: string }) 
   const containerRef = useRef<HTMLDivElement>(null);
   const textRef = useRef<HTMLSpanElement>(null);
   const [scrollDist, setScrollDist] = useState(0);
+  const phaseRef = useRef(Math.random());
 
   useEffect(() => {
     const check = () => {
@@ -621,6 +622,7 @@ function MarqueeText({ text, className }: { text: string; className?: string }) 
           scrollDist > 0
             ? ({
                 animation: `marquee-ping-pong ${duration}s ease-in-out infinite`,
+                animationDelay: `-${(phaseRef.current * duration).toFixed(2)}s`,
                 "--marquee-offset": `-${scrollDist}px`,
               } as React.CSSProperties)
             : undefined
