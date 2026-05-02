@@ -41,7 +41,7 @@ export function Layout({ children }: { children: ReactNode }) {
       <aside
         className={`${
           collapsed ? "w-full md:w-14" : "w-full md:w-64"
-        } border-r border-border bg-card flex flex-col shrink-0 transition-all duration-200`}
+        } border-r border-border bg-card flex flex-col shrink-0 transition-all duration-200 md:sticky md:top-0 md:h-screen`}
       >
         {/* Header */}
         <div className="h-14 flex items-center px-3 border-b border-border shrink-0 gap-2">
